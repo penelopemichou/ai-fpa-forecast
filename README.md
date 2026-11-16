@@ -6,11 +6,16 @@ FP&A (financial planning and analysis) teams forecast next quarter's revenue eve
 
 ## Companies
 
-| Company | Why it's here | SEC CIK |
-|---|---|---|
-| Mattel | Toys: strong Q4 (holiday) seasonality | 0000063276 |
-| Caterpillar | Machinery: follows the economic cycle | 0000018230 |
-| Alphabet (incl. Google Inc. before 2015) | Fast, fairly steady growth | 0001652044, 0001288776 |
+Sessions 0–3 used three companies: Mattel, Caterpillar and Alphabet. Session 4 added 17 more, five per type, with types assigned from business descriptions only, before any results:
+
+| Type | Companies |
+|---|---|
+| Seasonal (toys, retail, consumer electronics) | Mattel, Hasbro, Williams-Sonoma, Best Buy, Macy's |
+| Growth tech | Alphabet (incl. Google Inc. before 2015), Microsoft, Salesforce, Netflix, Adobe |
+| Cyclical industrial | Caterpillar, Deere, Cummins, PACCAR, Parker-Hannifin |
+| FMCG / consumer staples | Procter & Gamble, Colgate-Palmolive, Clorox, Church & Dwight, General Mills |
+
+CIKs and the reason for each type are in `src/companies.py`. Fiscal quarters follow each company's own fiscal year (for example, Microsoft's year ends in June).
 
 ## Data source
 
@@ -18,7 +23,7 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 ## How models are judged
 
-- Rolling-origin forecasts from 2013 Q1, 1 to 4 quarters ahead. At each forecast date, only quarters filed with the SEC within 65 days of the forecast quarter's end are used.
+- Rolling-origin forecasts, 1 to 4 quarters ahead, starting after five years of each company's history (2013 Q1 for the original three). At each forecast date, only quarters filed with the SEC within 65 days of the forecast quarter's end are used.
 - FP&A baselines every model must beat: *same quarter last year* (B1) and *same quarter last year × (1 + recent growth)* (B2), plus *last quarter* (B0) as a sanity check.
 - Only first-reported numbers are used, so later restatements don't leak into the past.
 
@@ -31,6 +36,8 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 **Session 2 done (16 Nov 2026): exponential smoothing (AutoETS).** See `notebooks/02_ets.ipynb`.
 
 **Session 3 done (16 Nov 2026): ARIMA and a simple combination.** See `notebooks/03_arima_combination.ipynb`.
+
+**Session 4 done (17 Nov 2026): does company type decide which forecast works?** 20 companies. See `notebooks/04_company_types.ipynb`.
 
 ## Session 1 result
 
@@ -67,6 +74,21 @@ AutoARIMA (on log revenue, re-chosen at every origin) and COMB (the plain averag
 
 ARIMA is a reasonable alternative to ETS, slightly better for some companies and slightly worse for others, and the best of all methods two to four quarters ahead for Caterpillar and Alphabet. But it switched models 15–18 times over 54 origins (ETS: 1–4). Averaging ETS with a clearly weaker simple rule did not help one quarter ahead. For the full-year number, nothing so far reliably beats the simple FP&A rules.
 
+## Session 4 result
+
+Hypothesis, written down before evaluating: the best simple rule one quarter ahead is *same quarter last year* (B1) for seasonal companies, *same quarter × growth* (B2) for growth tech and FMCG, and *last quarter* (B0) for cyclical industrials.
+
+| Type | Predicted | Best simple rule (5 companies each) | Matches |
+|---|---|---|---|
+| Seasonal | B1 | B2 ×4, B1 ×1 (Mattel, by 0.03 points) | 1 / 5 |
+| Growth tech | B2 | B2 ×5 | 5 / 5 |
+| Cyclical industrial | B0 | B0 ×4, B2 ×1 (Deere, which is also seasonal) | 4 / 5 |
+| FMCG | B2 | B2 ×3, B0 ×1, B1 ×1 | 3 / 5 |
+
+**13 of 20 match**, against 8.4 on average when the type labels are shuffled at random (1.8 % of 1,000 shuffles do as well): the pre-registered test passes. But three of the matches (Mattel, Caterpillar, Alphabet) were known when the hypothesis was written. On the 17 new companies alone it is 10 of 17, against 7.5 by chance (p ≈ 0.11), so the evidence is **suggestive, not proven**. What holds up: cyclical businesses are best served by *last quarter*, and growth companies by *same quarter × growth*. Seasonal companies do *not* favour plain *same quarter last year*: they grow too, so B2 ties or beats it.
+
+ETS beats each company's best simple rule one quarter ahead for 18 of 20 companies, but for the full year only 11 of 20, the same pattern as Sessions 2–3.
+
 ## Reproduce
 
 ```bash
@@ -78,4 +100,7 @@ cp .env.example .env              # then put your own email in .env (the SEC ask
 .venv/bin/python src/evaluate_baselines.py   # Session 1: writes results/
 .venv/bin/python src/evaluate_ets.py         # Session 2: writes results/
 .venv/bin/python src/evaluate_arima.py       # Session 3: writes results/ (about 1 minute)
+.venv/bin/python src/check_data.py           # Session 4: data checks for all 20 companies
+.venv/bin/python src/evaluate_types.py run   # Session 4: forecasts for all 20 companies
+.venv/bin/python src/evaluate_types.py evaluate
 ```

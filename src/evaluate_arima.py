@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from arima import in_disguise, rolling_arima
-from baselines import load
+from baselines import ORIGINAL_COMPANIES, load
 from combine import BEST_SIMPLE, rolling_combination
 from ets import rolling_ets
 from evaluate_baselines import (GROUPS, MOTOROLA, errors as baseline_errors, full_year,
@@ -44,7 +44,7 @@ def to_long(df, column, name, scale):
 
 def all_errors(value_col):
     """Baselines + ETS + ARIMA + COMB (column 'baseline' = method name)."""
-    df = load(value_col)
+    df = load(value_col, companies=ORIGINAL_COMPANIES)
     base = baseline_errors(value_col)
     scale = base.drop_duplicates(["company", "origin"])[["company", "origin", "mase_scale"]]
     ets = rolling_ets(df)
@@ -173,7 +173,7 @@ def main():
     print("Leak check, ARIMA (all should be 0 except the row count)")
     print(leak_check(arima_f, load()).to_string(), "\n")
     print("Disguise check: a pure simple-rule order must reproduce that rule")
-    print(disguise_check(arima_f, load()).to_string())
+    print(disguise_check(arima_f, load(companies=ORIGINAL_COMPANIES)).to_string())
 
 
 if __name__ == "__main__":

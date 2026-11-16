@@ -4,15 +4,21 @@ A companyfacts file holds every number a company has tagged in its
 filings (10-Q, 10-K, ...), for every period, together with the filing
 it came from. We save each file unchanged in data/raw/.
 
+Files that are already in data/raw/ are kept, so earlier results stay
+reproducible. Add --refresh to download everything again.
+
 Run from the project folder:
-    .venv/bin/python src/download_edgar.py
+    .venv/bin/python src/download_edgar.py [--refresh]
 """
 
 import json
+import sys
 import time
 from pathlib import Path
 
 import requests
+
+from companies import COMPANIES as COMPANY_LIST
 
 # --- 1. Settings --------------------------------------------------------
 
@@ -21,12 +27,7 @@ PROJECT = Path(__file__).resolve().parent.parent
 RAW_DIR = PROJECT / "data" / "raw"
 
 # CIK = the SEC's ID number for a company, always written with 10 digits.
-COMPANIES = {
-    "0000063276": "Mattel",
-    "0000018230": "Caterpillar",
-    "0001652044": "Alphabet",
-    "0001288776": "Google Inc. (before Alphabet, 2015)",
-}
+COMPANIES = {cik: entity for _, entities, _ in COMPANY_LIST.values() for cik, entity in entities}
 
 URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 
@@ -56,11 +57,15 @@ def main():
     # The SEC asks every program to say who it is: a name and an email.
     headers = {"User-Agent": f"Penelope Michou {read_email()}"}
 
+    refresh = "--refresh" in sys.argv
     for cik, name in COMPANIES.items():
+        out_file = RAW_DIR / f"CIK{cik}.json"
+        if out_file.exists() and not refresh:
+            print(f"{name:<38} -> {out_file.name}  already downloaded, kept")
+            continue
         response = requests.get(URL.format(cik=cik), headers=headers, timeout=60)
         response.raise_for_status()  # stop with an error if the SEC says no
 
-        out_file = RAW_DIR / f"CIK{cik}.json"
         out_file.write_bytes(response.content)  # save exactly what we got
 
         # A quick look inside, so we know the file is what we expect.

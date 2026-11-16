@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from baselines import cutoff_date, known_at, load
+from baselines import ORIGINAL_COMPANIES, cutoff_date, known_at, load
 from ets import SCALE, rolling_ets, training_series
 from evaluate_baselines import (GROUPS, MOTOROLA, errors as baseline_errors, full_year,
                                 metric_table, table_2020, with_groups)
@@ -32,10 +32,10 @@ BAR = {"Mattel": "B1", "Caterpillar": "B0", "Alphabet": "B2", "Alphabet excl. Mo
 
 # --- 1. ETS forecasts next to the baselines -------------------------------------
 
-def all_errors(value_col):
+def all_errors(value_col, companies=ORIGINAL_COMPANIES):
     """Baselines + ETS in one long table (column 'baseline' = method name)."""
-    base = baseline_errors(value_col)
-    ets = rolling_ets(load(value_col))
+    base = baseline_errors(value_col, companies)
+    ets = rolling_ets(load(value_col, companies=companies))
     scale = base.drop_duplicates(["company", "origin"])[["company", "origin", "mase_scale"]]
     e = ets.merge(scale, on=["company", "origin"])
     e["baseline"], e["forecast"] = "ETS", e["ets"]
@@ -117,9 +117,21 @@ def leak_check(ets, df):
         "forecast rows": len(ets),
         "training ends after the origin": int((ets["train_end"] > ets["origin"]).sum()),
         "last training quarter filed after the cutoff":
-            int((train_end_filed > ets["origin"].map(cutoff_date)).sum()),
+            int((train_end_filed > cutoffs(ets, df)).sum()),
         "target not after the training data": int((ets["target"] <= ets["train_end"]).sum()),
     })
+
+
+def cutoffs(rows, df):
+    """The cutoff date (65 days after each company's own origin quarter ended) per row."""
+    per_company = {c: g for c, g in df.groupby("company")}
+    cache = {}
+    out = []
+    for c, o in zip(rows["company"], rows["origin"]):
+        if (c, o) not in cache:
+            cache[(c, o)] = cutoff_date(o, per_company[c])
+        out.append(cache[(c, o)])
+    return pd.Series(out, index=rows.index)
 
 
 def statsmodels_check(ets, df):

@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from statsforecast.models import AutoARIMA
 
-from baselines import FIRST_ORIGIN, HORIZONS, known_at, load
+from baselines import FIRST_ORIGIN, HORIZONS, first_origin, known_at, load
 from ets import LEVEL, SEASON_LENGTH, training_series
 
 
@@ -48,6 +48,8 @@ def in_disguise(order):
 
 def arima_at_origin(known, targets):
     """Fit AutoARIMA on log revenue of the known quarters and forecast each target."""
+    if not targets:
+        return []
     train = training_series(known)
     steps = [(t - train.index[-1]).n for t in targets]
     model = AutoARIMA(season_length=SEASON_LENGTH).fit(np.log(train.to_numpy()))
@@ -68,12 +70,13 @@ def rolling_arima(df):
     for company, cdf in df.groupby("company", sort=False):
         actual = cdf.set_index("quarter")["value"]
         last_quarter = actual.index.max()
-        origin = FIRST_ORIGIN
+        origin = first_origin(cdf)                   # after 5 years of history
         while origin + 1 <= last_quarter:
             known = known_at(cdf, origin)
-            targets = [origin + h for h in HORIZONS if origin + h <= last_quarter]
-            for h, row in zip(HORIZONS, arima_at_origin(known, targets)):
-                rows.append({"company": company, "origin": origin, "h": h,
+            targets = [origin + h for h in HORIZONS if origin + h in actual.index]
+            for row in arima_at_origin(known, targets):
+                rows.append({"company": company, "origin": origin,
+                             "h": (row["target"] - origin).n,
                              "actual": actual[row["target"]], **row})
             origin += 1
     return pd.DataFrame(rows)

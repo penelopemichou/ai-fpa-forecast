@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from baselines import BASELINES, load, rolling_forecasts
+from baselines import BASELINES, ORIGINAL_COMPANIES, load, rolling_forecasts
 
 PROJECT = Path(__file__).resolve().parent.parent
 RESULTS = PROJECT / "results"
@@ -31,16 +31,16 @@ GROUPS = ["Mattel", "Caterpillar", "Alphabet", "Alphabet excl. Motorola"]
 
 # --- 1. Forecasts -> errors -------------------------------------------------
 
-def errors(value_col):
+def errors(value_col, companies=ORIGINAL_COMPANIES):
     """One row per company x origin x horizon x baseline, with its errors."""
-    f = rolling_forecasts(load(value_col))
+    f = rolling_forecasts(load(value_col, companies=companies))
     long = f.melt(id_vars=["company", "origin", "h", "target", "actual", "mase_scale"],
                   value_vars=BASELINES, var_name="baseline", value_name="forecast")
     long["ape"] = 100 * (long["actual"] - long["forecast"]).abs() / long["actual"]
     long["ase"] = (long["actual"] - long["forecast"]).abs() / long["mase_scale"]
     long["motorola"] = ((long["company"] == "Alphabet") &
                         long["target"].between(*MOTOROLA))
-    long["year_2020"] = long["target"].dt.year == 2020
+    long["year_2020"] = long["target"].dt.year == 2020   # fiscal year 2020 (= calendar for December year ends)
     return long
 
 

@@ -1,9 +1,34 @@
 # Progress
 
+## Session 4 hypothesis (fixed 17 Nov 2026, before any Session 4 forecast was evaluated)
+
+Which simple rule has the lowest one-quarter-ahead MAPE, by company type (types assigned from business descriptions only, approved 16 Nov 2026):
+
+| Type | Predicted winner | Why |
+|---|---|---|
+| Seasonal | B1, same quarter last year | the seasonal pattern repeats |
+| Growth tech | B2, same quarter last year × growth | steady growth |
+| Cyclical industrial | B0, last quarter | the cycle moves on, so year-old data is stale |
+| FMCG | B2 (Penelope's prediction) | mild seasonality, steady low growth, persistent price increases 2021–24 |
+
+Main test (fixed): count the companies whose best simple rule matches their type's prediction, then compare with 1,000 random shufflings of the type labels.
+
+## Session 4 results (evaluated 17 Nov 2026)
+
+- **Main test:** 13 of 20 match; random labellings average 8.4 (range 3–15); 1.8 % reach 13 or more → passes (p ≈ 0.02).
+- **Robustness (descriptive):** the hypothesis came from Session 1's results for Mattel, Caterpillar and Alphabet. Without them: 10 of 17 vs 7.5 by chance, p ≈ 0.11. Clear wins only (gap ≥ 0.5 points): 10 of 15, p ≈ 0.07. Suggestive, not proven.
+- **By type (h = 1 MAPE):** Seasonal 1/5 (B2 beat B1 for 4; Macy's and Best Buy by only 0.07 and 0.32 points); Growth 5/5 (B2); Cyclical 4/5 (B0, clear margins; Deere B2 because it is also seasonal); FMCG 3/5 (two near-ties; Colgate B0 at 1.85 %, Clorox B1).
+- **Near-ties** (best vs second-best rule under 0.5 points): Mattel 0.03, Macy's 0.07, Church & Dwight 0.18, Best Buy 0.32, General Mills 0.40.
+- **ETS vs each company's best rule:** h = 1 wins 18 of 20 (not PACCAR, Colgate); full year 11 of 20.
+- **2020 (ETS, h = 1):** Cyclical 17.3 % vs 4.8 %, Seasonal 13.6 vs 5.6, FMCG 4.9 vs 2.8, Growth 3.8 vs 2.8.
+- **Data:** 328 of 338 complete fiscal years add up within 0.5 % (the 10 failures are restatements). Eight non-seasonal jumps flagged: the 2020 shock, Hasbro–eOne, Clorox's cyberattack rebound.
+- **My predictions:** 13 matches ✓ (exactly), placebo ~2 % ✓, Growth 4/5 (5), Cyclical 3/5 (4; right that Deere is seasonal), FMCG 2/5 (3), Seasonal 4/5 ✗ (1). ETS h = 1 15/20 (18), full year 8/20 (11). 2020: Cyclical and Seasonal worst ✓; least affected was Growth, not FMCG.
+
 ## Session log
 
 | Session | Date | What was done | Lesson |
 |---|---|---|---|
+| 4 | 17 Nov 2026 | **Company types.** 17 companies added (`src/companies.py`, five per type, types from business descriptions only). `build_quarterly.py` now uses fiscal quarters from each company's own fiscal-year ends, 13/14-week quarters, full-year values only from annual reports, and drops mis-dated full-year tags; Best Buy from fiscal 2014 (fiscal-year change). Rolling origin after 5 years of each company's history; 65-day rule from each fiscal quarter end. `src/check_data.py`: data checks incl. non-seasonal jumps and tag conflicts. `src/evaluate_types.py`: forecasts for 20 companies, main test with a label-shuffling placebo, robustness, ETS vs best rule, 2020 by type. `notebooks/04_company_types.ipynb`. Sessions 0–3 data and results reproduce byte-identically. | Company type predicts the cyclical-vs-growth split (B0 vs B2), not seasonality: seasonal companies grow too. A hypothesis built from earlier results must be tested on new companies; there the evidence was only suggestive. |
 | 3 | 16 Nov 2026 | **ARIMA and a simple combination.** `src/arima.py`: AutoARIMA (season length 4) on log revenue, re-chosen by AICc at every origin, h = 1–4, 80 % intervals, order saved and flagged when it is a simple rule in disguise. `src/combine.py`: COMB = (ETS + best simple rule) / 2, no fitted weights. `src/evaluate_arima.py`: 12 main tests fixed in advance (h = 1 vs ETS, full year vs the best simple rule), Holm-corrected together; leak check; disguise check. `notebooks/03_arima_combination.ipynb`. | More flexible is not more reliable: ARIMA switched models 15–18 times and still landed within a few tenths of ETS. Averaging only helps when the two forecasts are about equally good. |
 | 2 | 16 Nov 2026 | **Exponential smoothing (AutoETS).** Installed statsforecast 2.1.1. `src/ets.py`: AutoETS (season length 4) re-chosen by AICc at every origin from the quarters known then, h = 1–4, 80 % intervals, chosen model saved. `src/evaluate_ets.py`: main tests fixed in advance (h = 1 and full year vs each company's bar), Diebold–Mariano with the Harvey correction, Holm correction for six tests, interval coverage, model choices, 2020, latest-revenue check, leak check, statsmodels cross-check. `notebooks/02_ets.ipynb`. Registered a project Jupyter kernel (a stale user-level `python3` kernel had been running the notebooks; reruns of 00 and 01 gave identical output). | A better next-quarter forecast is not a better full-year forecast: ETS cut the h = 1 miss by 16–40 % but tied or lost to the simple rules on the full year. With about 50 forecasts and six tests, even p ≈ 0.02 is not conclusive. |
 | 1 | 16 Nov 2026 | **FP&A baselines.** `src/baselines.py`: B0 last quarter, B1 same quarter last year, B2 B1 × (1 + growth of the last 4 known quarters vs the 4 before), rolling origin 2013 Q1–2026 Q2, h = 1–4, 65-day availability rule (changed from 45: with 45, Mattel's Q4 was never known at Q4 origins). `src/evaluate_baselines.py`: MAPE, MASE, full-year error, 2020 separately, Alphabet with and without Motorola targets, check with latest revenue. Charts and explanations in `notebooks/01_baselines.ipynb`. Pinned NumPy 2.4.6 + pandas 2.3.3 (pandas warned with NumPy 2.5). | The best simple rule depends on the company: seasonality (Mattel → B1), growth (Alphabet → B2), cycle (Caterpillar → B0, the "sanity check", beats both FP&A rules). A model has to beat the best baseline per company, not just one fixed rule. |
@@ -75,4 +100,4 @@ MAPE, % (first-reported revenue, 2013–2026; Alphabet without the Motorola targ
 
 ## Next
 
-Session 4: to be decided. The bars are unchanged: ETS at h = 1, and the best simple rule for the full year (Mattel B1, Caterpillar B0, Alphabet B2), with the same rolling origin, 65-day rule and first-reported revenue.
+Session 5: to be decided. Now 20 companies. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.

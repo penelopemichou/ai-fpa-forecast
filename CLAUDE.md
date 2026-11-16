@@ -20,27 +20,35 @@ You (Claude) write the code. I'm a beginner in Python: explain code simply, one 
 ## Data
 
 - Source: SEC EDGAR XBRL "companyfacts" API, `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json`.
-- Companies (CIK):
-  - Mattel 0000063276
-  - Caterpillar 0000018230
-  - Alphabet 0001652044, joined with Google Inc. 0001288776 (the company before the 2015 Alphabet restructuring)
+- Companies: 20, five per type, in `src/companies.py` (CIKs, type, one-line reason). Types were assigned from business descriptions only and approved on 16 Nov 2026; they are fixed. Sessions 0–3 used only Mattel, Caterpillar and Alphabet (`ORIGINAL_COMPANIES` in `src/baselines.py`); their scripts stay pinned to those three so their results don't change.
+  - Seasonal: Mattel, Hasbro, Williams-Sonoma, Best Buy, Macy's
+  - Growth tech: Alphabet (joined with Google Inc. before 2015), Microsoft, Salesforce, Netflix, Adobe
+  - Cyclical industrial: Caterpillar, Deere, Cummins, PACCAR, Parker-Hannifin
+  - FMCG: Procter & Gamble, Colgate-Palmolive, Clorox, Church & Dwight, General Mills
+  - Penelope confirmed none is a past employer.
 - The SEC requires a User-Agent header with a name and email. The email is read from `.env` (gitignored; see `.env.example`). Never commit it. Stay under 10 requests per second.
 - `data/raw/` holds the downloaded JSON and is gitignored. `data/processed/` holds the tables we build.
-- Revenue tags (in order of preference): Mattel `SalesRevenueNet` → `RevenueFromContractWithCustomerExcludingAssessedTax`; Caterpillar `Revenues`; Google Inc. `Revenues` → `SalesRevenueNet`; Alphabet Inc. `Revenues` → `RevenueFromContractWithCustomerExcludingAssessedTax`.
-- `data/processed/revenue_quarterly.csv`: 74 quarters per company, 2008 Q2–2026 Q3, no gaps (checked in `notebooks/00_data_check.ipynb`).
+- Revenue tags (in order of preference) per company: `TAGS` in `src/build_quarterly.py`. Each list is the company's TOTAL revenue under the names it used over time; tags that were a segment or included other income in the same filing are put last or left out.
+- **Fiscal quarters:** each company's own 12-month periods give its fiscal-year ends; a quarter is numbered by how many ~13-week steps it ends before that year end. Fiscal years are named after the calendar year they end in (Microsoft "2026 Q1" = Jul–Sep 2025). For December year ends this is the calendar quarter. Quarters are 80–98 days (13 or 14 weeks); `period_days` flags 14-week quarters (not adjusted).
+- Data rules in `build_quarterly.py`: full-year values only from 10-K/10-K/A/8-K (not 10-Qs); a full-year value more than 25 % from the first 10-K figure is a mis-dated tag and dropped; 98 days is the longest quarter.
+- `data/processed/revenue_quarterly.csv`: 20 companies, 54–77 quarters each. Checks in `src/check_data.py` (and `notebooks/00_data_check.ipynb` for the original three).
+- Best Buy changed its fiscal year-end in 2012, so it is used from fiscal 2014 Q1 only (`SERIES_START` in `companies.py`).
 - Watch out for:
   - 2008–early 2009 quarters first appear in XBRL only as comparison figures a year later, so their `first_filed_date` is ~400 days after the quarter. Safe (conservative), but the first fair forecast origin is around 2010.
   - Alphabet 2012–2013: Google removed the Motorola businesses from past revenue, so the 2013 quarters were restated about −7 % (2012 Q2 −3.3 %). The 2015 10-K restated full-year 2012 to $46.0 bn, but the 2012 quarters never were, so they add up to the original $50.2 bn.
-  - Google's original Q3 2012 10-Q has only the Jan–Sep total in the SEC data, so 2012 Q3 and Q4 count as public on 2013-10-24.
+  - Google's original Q3 2012 10-Q tags the quarter as starting 22 June (100 days), so it is not used; 2012 Q3 and Q4 count as public on 2013-10-24.
+  - Restatements (first-reported ≠ latest by more than 0.5 %): P&G (up to 13 %), Best Buy (9 %), Microsoft (2018 revenue standard, 10 %), Alphabet (Motorola, 8 %), Clorox (6 %), Macy's, Salesforce, General Mills (≤ 1.5 %).
+  - Flagged non-seasonal jumps (> 30 %): the 2020 shock (Hasbro, Macy's, Cummins, PACCAR), Hasbro–eOne (2020 Q1) and its sale (2025 Q1), Clorox's 2023 cyberattack rebound (fiscal 2024 Q2).
   - Q4 rule (`build_q4`): first reported = the earliest of direct Q4, full year − Q1–Q3, full year − Jan–Sep; if they disagree by more than 0.5 %, take the earliest that agrees with the newest (only Google 2012 Q4).
 
 ## Forecast setup (fixed for all sessions)
 
 - **Data:** `data/processed/revenue_quarterly.csv`. The main run uses `revenue_first_reported` (inputs and actuals). A second run uses `revenue_latest` as a check.
-- **Rolling origin:** the first forecast origin is 2013 Q1, then every quarter up to the last possible one. At each origin, use only quarters whose `first_filed_date` is on or before the origin quarter's end + 65 days. Large companies must file the 10-K within 60 days (10-Q: 40 days), so an FP&A team knows the quarter by then. (Changed from 45 days on 16 Nov 2026: with 45 days, Mattel's Q4 was never known at Q4 origins.)
+- **Rolling origin:** the first forecast origin comes after 5 years (20 quarters) of each company's own history (for the original three: 2013 Q1), then every quarter up to the last possible one. At each origin, use only quarters whose `first_filed_date` is on or before the end of that company's own fiscal origin quarter + 65 days. Large companies must file the 10-K within 60 days (10-Q: 40 days), so an FP&A team knows the quarter by then. (Changed from 45 days on 16 Nov 2026: with 45 days, Mattel's Q4 was never known at Q4 origins.)
 - **Horizons:** h = 1, 2, 3, 4 quarters ahead.
 - **Baselines** (`src/baselines.py`): B0 last quarter (sanity check only), B1 same quarter last year, B2 same quarter last year × (1 + growth of the last 4 known quarters vs the 4 before them). Every model must be compared with B1 and B2.
-- **Alphabet Motorola window:** targets 2012 Q2–2014 Q4 are affected by the Motorola restatements. Report Alphabet with and without them. Show 2020 separately.
+- **Alphabet Motorola window:** targets 2012 Q2–2014 Q4 are affected by the Motorola restatements. Report Alphabet with and without them (Session 4 scores it without). Show 2020 separately (Session 4: targets ending in calendar 2020).
+- **Pre-registration:** write the hypothesis and main tests down (PROGRESS.md) before evaluating, and say when a hypothesis was shaped by earlier results on the same companies.
 
 ## Setup
 

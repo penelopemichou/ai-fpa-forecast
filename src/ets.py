@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from statsforecast.models import AutoETS
 
-from baselines import FIRST_ORIGIN, FORECASTERS, HORIZONS, cutoff_date, known_at, load
+from baselines import FIRST_ORIGIN, FORECASTERS, HORIZONS, cutoff_date, first_origin, known_at, load
 
 SEASON_LENGTH = 4          # 4 quarters in a year
 LEVEL = 80                 # 80 % prediction interval
@@ -44,6 +44,8 @@ def model_name(fitted):
 
 def ets_at_origin(known, targets):
     """Fit AutoETS on the known quarters and forecast each target quarter."""
+    if not targets:
+        return []
     train = training_series(known)
     steps = [(t - train.index[-1]).n for t in targets]          # quarters ahead of the last training quarter
     model = AutoETS(season_length=SEASON_LENGTH).fit(train.to_numpy() / SCALE)
@@ -65,12 +67,13 @@ def rolling_ets(df):
     for company, cdf in df.groupby("company", sort=False):
         actual = cdf.set_index("quarter")["value"]
         last_quarter = actual.index.max()
-        origin = FIRST_ORIGIN
+        origin = first_origin(cdf)                   # after 5 years of history
         while origin + 1 <= last_quarter:
             known = known_at(cdf, origin)
-            targets = [origin + h for h in HORIZONS if origin + h <= last_quarter]
-            for h, row in zip(HORIZONS, ets_at_origin(known, targets)):
-                rows.append({"company": company, "origin": origin, "h": h,
+            targets = [origin + h for h in HORIZONS if origin + h in actual.index]
+            for row in ets_at_origin(known, targets):
+                rows.append({"company": company, "origin": origin,
+                             "h": (row["target"] - origin).n,
                              "actual": actual[row["target"]], **row})
             origin += 1
     return pd.DataFrame(rows)
@@ -83,7 +86,7 @@ def worked_example(df, company, origin):
     rows = ets_at_origin(known, targets)
     m = 1e6
 
-    print(f"{company}, origin {origin}: we pretend it is {cutoff_date(origin).date()}")
+    print(f"{company}, origin {origin}: we pretend it is {cutoff_date(origin, cdf).date()}")
     print(f"Training quarters: {rows[0]['train_start']} to {rows[0]['train_end']} "
           f"({rows[0]['n_train']} quarters)")
     print(f"Model chosen by AICc: {rows[0]['model']}  (AICc {rows[0]['aicc']:.1f})\n")

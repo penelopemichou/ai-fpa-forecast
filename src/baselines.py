@@ -23,34 +23,67 @@ import pandas as pd
 PROJECT = Path(__file__).resolve().parent.parent
 DATA = PROJECT / "data" / "processed" / "revenue_quarterly.csv"
 
-FIRST_ORIGIN = pd.Period("2013Q1", freq="Q")
+FIRST_ORIGIN = pd.Period("2013Q1", freq="Q")   # Sessions 1-3 (and the worked examples)
+HISTORY_QUARTERS = 20         # Session 4 rule: first origin after 5 years of a company's own history
 HORIZONS = [1, 2, 3, 4]
 DAYS_AFTER_QUARTER_END = 65   # large companies must file the 10-K within 60 days
 BASELINES = ["B0", "B1", "B2"]
+ORIGINAL_COMPANIES = ["Mattel", "Caterpillar", "Alphabet"]   # Sessions 0-3
 
 
 # --- 1. Data ---------------------------------------------------------------
 
-def load(value_col="revenue_first_reported"):
-    """The quarterly table, with a 'quarter' column (e.g. 2013Q1) and a
-    'value' column holding the revenue series we forecast."""
+def load(value_col="revenue_first_reported", companies=None):
+    """The quarterly table, with a 'quarter' column and a 'value' column holding
+    the revenue series we forecast. `companies` picks (and orders) companies.
+
+    'quarter' is the FISCAL quarter written as a period label, e.g. 2026Q1 for
+    the first quarter of fiscal 2026 (for Microsoft that is Jul-Sep 2025).
+    For December year ends it equals the calendar quarter. The real end date
+    of each quarter is in 'period_end'.
+    """
+    from companies import SERIES_START
     df = pd.read_csv(DATA, parse_dates=["period_end", "first_filed_date"])
+    if companies is not None:
+        df = pd.concat([df[df["company"] == c] for c in companies], ignore_index=True)
     df["quarter"] = pd.PeriodIndex.from_fields(
         year=df["fiscal_year"], quarter=df["fiscal_quarter"], freq="Q")
+    for company, start in SERIES_START.items():          # e.g. Best Buy after its fiscal-year change
+        df = df[(df["company"] != company) | (df["quarter"] >= pd.Period(start, freq="Q"))]
+    df = df.reset_index(drop=True)
     df["value"] = df[value_col]
     return df
 
 
-def cutoff_date(origin):
-    """The day we pretend it is: 65 days after the origin quarter ended."""
-    quarter_end = pd.Timestamp(origin.end_time.date())
+def quarter_end_date(company_df, quarter):
+    """The real end date of a company's fiscal quarter (estimated from the
+    nearest earlier quarter, 91 days per quarter, if that quarter is missing)."""
+    rows = company_df[company_df["quarter"] <= quarter]
+    if rows.empty:
+        return pd.Timestamp(quarter.end_time.date())
+    last = rows.loc[rows["quarter"].idxmax()]
+    return pd.Timestamp(last["period_end"]) + timedelta(days=91 * (quarter - last["quarter"]).n)
+
+
+def cutoff_date(origin, company_df=None):
+    """The day we pretend it is: 65 days after the origin quarter ended.
+    With company_df, the end of that company's own fiscal quarter is used."""
+    if company_df is None:
+        quarter_end = pd.Timestamp(origin.end_time.date())
+    else:
+        quarter_end = quarter_end_date(company_df, origin)
     return quarter_end + timedelta(days=DAYS_AFTER_QUARTER_END)
+
+
+def first_origin(company_df):
+    """The first forecast origin: after 5 years (20 quarters) of the company's history."""
+    return company_df["quarter"].min() + (HISTORY_QUARTERS - 1)
 
 
 def known_at(company_df, origin):
     """Revenue of the quarters that were public on the cutoff date,
     as a Series: quarter -> revenue, oldest first."""
-    public = company_df["first_filed_date"] <= cutoff_date(origin)
+    public = company_df["first_filed_date"] <= cutoff_date(origin, company_df)
     known = company_df[public & (company_df["quarter"] <= origin)]
     return known.set_index("quarter")["value"].sort_index()
 
@@ -116,7 +149,7 @@ def rolling_forecasts(df):
     for company, cdf in df.groupby("company", sort=False):
         actual = cdf.set_index("quarter")["value"]
         last_quarter = actual.index.max()
-        origin = FIRST_ORIGIN
+        origin = first_origin(cdf)                   # after 5 years of history
         while origin + 1 <= last_quarter:            # last origin: h = 1 still has an actual
             known = known_at(cdf, origin)
             scale = seasonal_naive_scale(known)
@@ -124,6 +157,8 @@ def rolling_forecasts(df):
                 target = origin + h
                 if target > last_quarter:
                     break
+                if target not in actual.index:       # a missing quarter: nothing to compare with
+                    continue
                 row = {"company": company, "origin": origin, "h": h, "target": target,
                        "last_known": known.index[-1], "actual": actual[target],
                        "mase_scale": scale}
@@ -141,7 +176,7 @@ def worked_example(df, company, origin):
     known = known_at(cdf, origin)
     m = 1e6                                            # show $ millions
 
-    print(f"{company}, origin {origin}: we pretend it is {cutoff_date(origin).date()}")
+    print(f"{company}, origin {origin}: we pretend it is {cutoff_date(origin, cdf).date()}")
     print(f"Latest public quarter: {known.index[-1]}\n")
 
     window = growth_window(known)

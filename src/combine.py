@@ -39,7 +39,7 @@ def worked_example(df, company, origin):
     m = 1e6
 
     order = ar[0]["order"]
-    print(f"{company}, origin {origin}: we pretend it is {cutoff_date(origin).date()}")
+    print(f"{company}, origin {origin}: we pretend it is {cutoff_date(origin, cdf).date()}")
     print(f"ARIMA order (log revenue): {order}"
           f"{'  = ' + in_disguise(order) if in_disguise(order) else ''}")
     print(f"ETS model: {et[0]['model']}    Best simple rule: {best}\n")
