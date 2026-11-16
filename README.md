@@ -28,6 +28,8 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 **Session 1 done (16 Nov 2026): FP&A baselines.** See `notebooks/01_baselines.ipynb` and `PROGRESS.md`.
 
+**Session 2 done (16 Nov 2026): exponential smoothing (AutoETS).** See `notebooks/02_ets.ipynb`.
+
 ## Session 1 result
 
 No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-reported revenue), the average miss (MAPE) of the best simple rule is:
@@ -40,6 +42,18 @@ No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-repor
 
 Seasonality decides for Mattel, growth for Alphabet, and the business cycle for Caterpillar. There, both FP&A rules (12.0–14.1 %) lose to the "sanity check" of simply repeating last quarter, because year-old information is stale at cycle turns. 2020 roughly doubled the misses for Mattel and Caterpillar. Using restated instead of first-reported revenue changes the results by less than 0.5 points. These numbers are the bar for every model in later sessions.
 
+## Session 2 result
+
+Exponential smoothing (AutoETS, re-chosen at every origin from the quarters known then) misses less than each company's best simple rule **one quarter ahead**, but **not for the full year**:
+
+| Company | Bar | MAPE 1 quarter ahead: ETS vs bar | Diebold–Mariano p (Holm-corrected) | Full-year MAPE: ETS vs bar |
+|---|---|---|---|---|
+| Mattel | B1 | 7.5 % vs 8.9 % | 0.25 (1.00) | 6.9 % vs 6.4 % |
+| Caterpillar | B0 | 5.4 % vs 7.2 % | 0.02 (0.10) | 9.2 % vs 9.2 % |
+| Alphabet (excl. Motorola) | B2 | 3.4 % vs 5.7 % | 0.02 (0.10) | 5.9 % vs 7.2 % |
+
+The next-quarter gains (16–40 %) are suggestive but not conclusive once corrected for running six tests, and they fade to nothing by four quarters ahead. For the full-year number an FP&A team reports, ETS adds nothing over the simple rules. The 80 % prediction intervals held the actual 76–81 % of the time. The result survives checks for leaks, for restatements (first-reported vs latest revenue) and for the software library (statsmodels gives nearly the same errors).
+
 ## Reproduce
 
 ```bash
@@ -49,4 +63,5 @@ cp .env.example .env              # then put your own email in .env (the SEC ask
 .venv/bin/python src/download_edgar.py
 .venv/bin/python src/build_quarterly.py
 .venv/bin/python src/evaluate_baselines.py   # Session 1: writes results/
+.venv/bin/python src/evaluate_ets.py         # Session 2: writes results/
 ```

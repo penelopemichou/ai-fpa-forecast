@@ -45,7 +45,8 @@ You (Claude) write the code. I'm a beginner in Python: explain code simply, one 
 ## Setup
 
 - Python 3.12 (Homebrew, `/opt/homebrew/bin/python3.12`) venv in `.venv/`. Not the Mac's built-in Python 3.9, which no longer gets updates. Run things with `.venv/bin/python`, or activate first: `source .venv/bin/activate`.
-- Packages: `requirements.txt` (pandas, requests, matplotlib, jupyter).
+- Packages: `requirements.txt` (pinned: numpy 2.4.6, pandas 2.3.3, statsforecast 2.1.1, …). Ask before installing anything new.
+- **Notebooks: run them with the project kernel**, e.g. `jupyter nbconvert --execute --ExecutePreprocessor.kernel_name=ai-fpa-forecast …`. A user-level kernel called `python3` (in `~/Library/Jupyter/kernels/`) points to a temporary venv from another project and takes priority over the venv's own. Notebooks 00 and 01 were first run on it; rerun on 16 Nov 2026 on the project kernel with identical text output.
 
 ## Where I am in my learning
 
