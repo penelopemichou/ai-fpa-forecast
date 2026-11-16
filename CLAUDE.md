@@ -34,6 +34,14 @@ You (Claude) write the code. I'm a beginner in Python: explain code simply, one 
   - Google's original Q3 2012 10-Q has only the Jan–Sep total in the SEC data, so 2012 Q3 and Q4 count as public on 2013-10-24.
   - Q4 rule (`build_q4`): first reported = the earliest of direct Q4, full year − Q1–Q3, full year − Jan–Sep; if they disagree by more than 0.5 %, take the earliest that agrees with the newest (only Google 2012 Q4).
 
+## Forecast setup (fixed for all sessions)
+
+- **Data:** `data/processed/revenue_quarterly.csv`. The main run uses `revenue_first_reported` (inputs and actuals). A second run uses `revenue_latest` as a check.
+- **Rolling origin:** the first forecast origin is 2013 Q1, then every quarter up to the last possible one. At each origin, use only quarters whose `first_filed_date` is on or before the origin quarter's end + 65 days. Large companies must file the 10-K within 60 days (10-Q: 40 days), so an FP&A team knows the quarter by then. (Changed from 45 days on 16 Nov 2026: with 45 days, Mattel's Q4 was never known at Q4 origins.)
+- **Horizons:** h = 1, 2, 3, 4 quarters ahead.
+- **Baselines** (`src/baselines.py`): B0 last quarter (sanity check only), B1 same quarter last year, B2 same quarter last year × (1 + growth of the last 4 known quarters vs the 4 before them). Every model must be compared with B1 and B2.
+- **Alphabet Motorola window:** targets 2012 Q2–2014 Q4 are affected by the Motorola restatements. Report Alphabet with and without them. Show 2020 separately.
+
 ## Setup
 
 - Python 3.12 (Homebrew, `/opt/homebrew/bin/python3.12`) venv in `.venv/`. Not the Mac's built-in Python 3.9, which no longer gets updates. Run things with `.venv/bin/python`, or activate first: `source .venv/bin/activate`.

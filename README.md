@@ -18,15 +18,27 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 ## How models are judged
 
-- Rolling-origin forecasts: forecast one quarter ahead, move forward one quarter, repeat.
-- Two FP&A baselines every model must beat: *same quarter last year*, and *same quarter last year × last year's growth*.
-- Only first-reported numbers are used to train, so later restatements don't leak into the past.
+- Rolling-origin forecasts from 2013 Q1, 1 to 4 quarters ahead. At each forecast date, only quarters filed with the SEC within 65 days of the forecast quarter's end are used.
+- FP&A baselines every model must beat: *same quarter last year* (B1) and *same quarter last year × (1 + recent growth)* (B2), plus *last quarter* (B0) as a sanity check.
+- Only first-reported numbers are used, so later restatements don't leak into the past.
 
 ## Status
 
-**Session 0 done (16 Nov 2026): data downloaded and checked.** `data/processed/revenue_quarterly.csv` has 74 quarters per company (2008 Q2 – 2026 Q3, no gaps), with both the first-reported and the latest revenue for each quarter. See `notebooks/00_data_check.ipynb` and `PROGRESS.md`.
+**Session 0 done (16 Nov 2026): data downloaded and checked.** `data/processed/revenue_quarterly.csv` has 74 quarters per company (2008 Q2 – 2026 Q3, no gaps), with both the first-reported and the latest revenue for each quarter. See `notebooks/00_data_check.ipynb`.
 
-Next: the FP&A baselines with rolling-origin forecasts.
+**Session 1 done (16 Nov 2026): FP&A baselines.** See `notebooks/01_baselines.ipynb` and `PROGRESS.md`.
+
+## Session 1 result
+
+No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-reported revenue), the average miss (MAPE) of the best simple rule is:
+
+| Company | Best baseline | MAPE, 1 quarter ahead | Full-year MAPE |
+|---|---|---|---|
+| Mattel | Same quarter last year (B1) | 8.9 % | 6.4 % |
+| Caterpillar | **Last quarter (B0)** | 7.2 % | 9.2 % |
+| Alphabet (excl. Motorola restatements) | Same quarter last year × growth (B2) | 5.7 % | 7.2 % |
+
+Seasonality decides for Mattel, growth for Alphabet, and the business cycle for Caterpillar. There, both FP&A rules (12.0–14.1 %) lose to the "sanity check" of simply repeating last quarter, because year-old information is stale at cycle turns. 2020 roughly doubled the misses for Mattel and Caterpillar. Using restated instead of first-reported revenue changes the results by less than 0.5 points. These numbers are the bar for every model in later sessions.
 
 ## Reproduce
 
@@ -36,4 +48,5 @@ python3.12 -m venv .venv
 cp .env.example .env              # then put your own email in .env (the SEC asks for one)
 .venv/bin/python src/download_edgar.py
 .venv/bin/python src/build_quarterly.py
+.venv/bin/python src/evaluate_baselines.py   # Session 1: writes results/
 ```
