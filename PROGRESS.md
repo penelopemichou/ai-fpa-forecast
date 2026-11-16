@@ -4,9 +4,36 @@
 
 | Session | Date | What was done | Lesson |
 |---|---|---|---|
+| 3 | 16 Nov 2026 | **ARIMA and a simple combination.** `src/arima.py`: AutoARIMA (season length 4) on log revenue, re-chosen by AICc at every origin, h = 1–4, 80 % intervals, order saved and flagged when it is a simple rule in disguise. `src/combine.py`: COMB = (ETS + best simple rule) / 2, no fitted weights. `src/evaluate_arima.py`: 12 main tests fixed in advance (h = 1 vs ETS, full year vs the best simple rule), Holm-corrected together; leak check; disguise check. `notebooks/03_arima_combination.ipynb`. | More flexible is not more reliable: ARIMA switched models 15–18 times and still landed within a few tenths of ETS. Averaging only helps when the two forecasts are about equally good. |
 | 2 | 16 Nov 2026 | **Exponential smoothing (AutoETS).** Installed statsforecast 2.1.1. `src/ets.py`: AutoETS (season length 4) re-chosen by AICc at every origin from the quarters known then, h = 1–4, 80 % intervals, chosen model saved. `src/evaluate_ets.py`: main tests fixed in advance (h = 1 and full year vs each company's bar), Diebold–Mariano with the Harvey correction, Holm correction for six tests, interval coverage, model choices, 2020, latest-revenue check, leak check, statsmodels cross-check. `notebooks/02_ets.ipynb`. Registered a project Jupyter kernel (a stale user-level `python3` kernel had been running the notebooks; reruns of 00 and 01 gave identical output). | A better next-quarter forecast is not a better full-year forecast: ETS cut the h = 1 miss by 16–40 % but tied or lost to the simple rules on the full year. With about 50 forecasts and six tests, even p ≈ 0.02 is not conclusive. |
 | 1 | 16 Nov 2026 | **FP&A baselines.** `src/baselines.py`: B0 last quarter, B1 same quarter last year, B2 B1 × (1 + growth of the last 4 known quarters vs the 4 before), rolling origin 2013 Q1–2026 Q2, h = 1–4, 65-day availability rule (changed from 45: with 45, Mattel's Q4 was never known at Q4 origins). `src/evaluate_baselines.py`: MAPE, MASE, full-year error, 2020 separately, Alphabet with and without Motorola targets, check with latest revenue. Charts and explanations in `notebooks/01_baselines.ipynb`. Pinned NumPy 2.4.6 + pandas 2.3.3 (pandas warned with NumPy 2.5). | The best simple rule depends on the company: seasonality (Mattel → B1), growth (Alphabet → B2), cycle (Caterpillar → B0, the "sanity check", beats both FP&A rules). A model has to beat the best baseline per company, not just one fixed rule. |
 | 0 | 16 Nov 2026 | **Data downloaded and checked.** Repo set up (Python 3.12 venv). Downloaded SEC companyfacts for Mattel, Caterpillar, Google Inc. and Alphabet (`src/download_edgar.py`). Listed revenue tags (`src/list_revenue_tags.py`) and chose which to stitch per company. Built `data/processed/revenue_quarterly.csv` (`src/build_quarterly.py`): 74 quarters per company, 2008 Q2–2026 Q3, no gaps, with first-reported and latest revenue. Checked it in `notebooks/00_data_check.ipynb`. | Restatements are real and can be large: Google's 2013 quarters were later restated about −7 % (Motorola). An honest forecast test must use first-reported values and the date they became public. |
+
+## ARIMA and combination results (Session 3)
+
+Main tests (12, fixed before seeing results, Holm-corrected together), first-reported revenue:
+
+| Test | Company | New vs | MAPE new / vs | New closer | p | Holm p |
+|---|---|---|---|---|---|---|
+| h = 1 | Mattel | ARIMA vs ETS | 6.9 / 7.5 | 52 % | 0.40 | 1.00 |
+| | | COMB vs ETS | 7.3 / 7.5 | 57 % | 0.72 | 1.00 |
+| | Caterpillar | ARIMA vs ETS | 5.9 / 5.4 | 31 % | 0.42 | 1.00 |
+| | | COMB vs ETS | 6.0 / 5.4 | 31 % | 0.16 | 1.00 |
+| | Alphabet excl. Motorola | ARIMA vs ETS | 3.2 / 3.4 | 60 % | 0.53 | 1.00 |
+| | | COMB vs ETS | 4.2 / 3.4 | 45 % | 0.11 | 1.00 |
+| Full year | Mattel | ARIMA vs B1 | 6.7 / 6.4 | 47 % | 0.76 | 1.00 |
+| | | COMB vs B1 | 6.4 / 6.4 | 49 % | 0.91 | 1.00 |
+| | Caterpillar | ARIMA vs B0 | 8.1 / 9.2 | 47 % | 0.38 | 1.00 |
+| | | COMB vs B0 | 9.1 / 9.2 | 63 % | 0.56 | 1.00 |
+| | Alphabet excl. Motorola | ARIMA vs B2 | 5.4 / 7.2 | 59 % | 0.34 | 1.00 |
+| | | COMB vs B2 | 6.1 / 7.2 | 50 % | 0.39 | 1.00 |
+
+- ARIMA has the lowest MAPE at h = 2–4 for Caterpillar and Alphabet (Alphabet h = 4: 7.7 % vs 8.8 %).
+- ARIMA 80 % coverage: Mattel 75 %, Caterpillar 90 % (too wide), Alphabet 78–80 %.
+- Orders: 10–12 different per company, 15 / 18 / 15 switches. Caterpillar was B0 in disguise at 11 of 54 origins (its 44 forecasts equal B0 exactly). Mattel always seasonally differenced; Alphabet seasonal difference + drift.
+- 2020 at h = 1: ARIMA worse than ETS for Mattel (9.3 vs 7.8 %) and Alphabet (11.0 vs 9.9 %), better for Caterpillar (8.6 vs 9.5 %).
+- Checks: 0 leaks. Restated revenue changes little, except Alphabet with Motorola quarters (ARIMA h = 1: 3.5 → 4.3 %). One fit (Alphabet, origin 2013 Q3, inside the Motorola window) used three rounds of differencing; its forecasts are sensible.
+- My predictions: right that 0 of 12 are significant, right on COMB at h = 1 (worse for Alphabet ~4 % and Caterpillar ~6 %, the same for Mattel), and on the number of switches (10–20). Wrong that ARIMA's full year beats nobody (ahead for Caterpillar and Alphabet, not significant) and that its intervals are too narrow (similar or too wide).
 
 ## ETS results (Session 2)
 
@@ -48,4 +75,4 @@ MAPE, % (first-reported revenue, 2013–2026; Alphabet without the Motorola targ
 
 ## Next
 
-Session 3: to be decided. The bar is now ETS at h = 1 and the best baseline for the full year, with the same rolling origin, 65-day rule and first-reported revenue.
+Session 4: to be decided. The bars are unchanged: ETS at h = 1, and the best simple rule for the full year (Mattel B1, Caterpillar B0, Alphabet B2), with the same rolling origin, 65-day rule and first-reported revenue.

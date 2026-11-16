@@ -30,6 +30,8 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 **Session 2 done (16 Nov 2026): exponential smoothing (AutoETS).** See `notebooks/02_ets.ipynb`.
 
+**Session 3 done (16 Nov 2026): ARIMA and a simple combination.** See `notebooks/03_arima_combination.ipynb`.
+
 ## Session 1 result
 
 No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-reported revenue), the average miss (MAPE) of the best simple rule is:
@@ -54,6 +56,17 @@ Exponential smoothing (AutoETS, re-chosen at every origin from the quarters know
 
 The next-quarter gains (16–40 %) are suggestive but not conclusive once corrected for running six tests, and they fade to nothing by four quarters ahead. For the full-year number an FP&A team reports, ETS adds nothing over the simple rules. The 80 % prediction intervals held the actual 76–81 % of the time. The result survives checks for leaks, for restatements (first-reported vs latest revenue) and for the software library (statsmodels gives nearly the same errors).
 
+## Session 3 result
+
+AutoARIMA (on log revenue, re-chosen at every origin) and COMB (the plain average of ETS and each company's best simple rule) were tested against the current bars in 12 main tests, fixed in advance and Holm-corrected together. **None is significant (all Holm p = 1.00).**
+
+| MAPE, % | Mattel | Caterpillar | Alphabet (excl. Motorola) |
+|---|---|---|---|
+| 1 quarter ahead: ETS (bar) / ARIMA / COMB | 7.5 / 6.9 / 7.3 | 5.4 / 5.9 / 6.0 | 3.4 / 3.2 / 4.2 |
+| Full year: best simple rule (bar) / ARIMA / COMB | 6.4 / 6.7 / 6.4 | 9.2 / 8.1 / 9.1 | 7.2 / 5.4 / 6.1 |
+
+ARIMA is a reasonable alternative to ETS, slightly better for some companies and slightly worse for others, and the best of all methods two to four quarters ahead for Caterpillar and Alphabet. But it switched models 15–18 times over 54 origins (ETS: 1–4). Averaging ETS with a clearly weaker simple rule did not help one quarter ahead. For the full-year number, nothing so far reliably beats the simple FP&A rules.
+
 ## Reproduce
 
 ```bash
@@ -64,4 +77,5 @@ cp .env.example .env              # then put your own email in .env (the SEC ask
 .venv/bin/python src/build_quarterly.py
 .venv/bin/python src/evaluate_baselines.py   # Session 1: writes results/
 .venv/bin/python src/evaluate_ets.py         # Session 2: writes results/
+.venv/bin/python src/evaluate_arima.py       # Session 3: writes results/ (about 1 minute)
 ```
