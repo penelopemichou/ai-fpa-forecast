@@ -39,6 +39,8 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 **Session 4 done (17 Nov 2026): does company type decide which forecast works?** 20 companies. See `notebooks/04_company_types.ipynb`.
 
+**Session 5 done (17 Nov 2026): machine learning (LightGBM) trained on all 20 companies.** See `notebooks/05_lightgbm.ipynb`.
+
 ## Session 1 result
 
 No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-reported revenue), the average miss (MAPE) of the best simple rule is:
@@ -89,10 +91,22 @@ Hypothesis, written down before evaluating: the best simple rule one quarter ahe
 
 ETS beats each company's best simple rule one quarter ahead for 18 of 20 companies, but for the full year only 11 of 20, the same pattern as Sessions 2–3.
 
+## Session 5 result
+
+LightGBM (boosted decision trees) learned one pattern from all 20 companies together: it predicts growth vs the same quarter last year from the last four year-on-year growths, the last quarter-on-quarter growth, the fiscal quarter and the company type. It was retrained at every origin on rows public by then, with settings fixed in advance and no tuning.
+
+| Main test (fixed in advance) | LightGBM wins | Sign test p |
+|---|---|---|
+| One quarter ahead: beats ETS | **2 of 20** | 0.0004 (LightGBM worse) |
+| Full year: beats the company's best simple rule | 11 of 20 | 0.82 |
+
+**Machine learning did not beat exponential smoothing.** One quarter ahead it is reliably a little worse (mean MAPE 5.0 % vs 4.4 %), and for the full year it is a coin flip against the simple rules, just like ETS. It did learn real patterns: it beats its simple version B2 for 18 of 20 companies, by learning that only part of last year's growth carries over, and a no-feature placebo for all 20. It also held up better than ETS for cyclical and FMCG companies in 2020. One quarter ahead it leans almost entirely on the latest year-on-year growth; company type matters only further out.
+
 ## Reproduce
 
 ```bash
 python3.12 -m venv .venv
+brew install libomp               # macOS only: LightGBM (Session 5) needs it
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env              # then put your own email in .env (the SEC asks for one)
 .venv/bin/python src/download_edgar.py
@@ -103,4 +117,6 @@ cp .env.example .env              # then put your own email in .env (the SEC ask
 .venv/bin/python src/check_data.py           # Session 4: data checks for all 20 companies
 .venv/bin/python src/evaluate_types.py run   # Session 4: forecasts for all 20 companies
 .venv/bin/python src/evaluate_types.py evaluate
+.venv/bin/python src/lgbm.py run             # Session 5: LightGBM forecasts (about 4 minutes)
+.venv/bin/python src/evaluate_lgbm.py
 ```

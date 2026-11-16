@@ -13,6 +13,23 @@ Which simple rule has the lowest one-quarter-ahead MAPE, by company type (types 
 
 Main test (fixed): count the companies whose best simple rule matches their type's prediction, then compare with 1,000 random shufflings of the type labels.
 
+## Session 5 results: LightGBM (evaluated 17 Nov 2026)
+
+Settings fixed in CLAUDE.md before any run (num_leaves 8, min_data_in_leaf 20, learning rate 0.05, 200 trees, seed 0; no tuning). 4,036 forecasts, 942 distinct models, 0 leaks.
+
+| Main test (fixed) | LightGBM wins | Sign test p |
+|---|---|---|
+| h = 1: beats ETS | 2 of 20 (Salesforce, Adobe) | 0.0004 → LightGBM reliably worse |
+| Full year: beats the best simple rule | 11 of 20 | 0.82 |
+
+- Mean MAPE at h = 1–4: ETS 4.4 / 6.3 / 7.7 / 8.9; LightGBM 5.0 / 6.9 / 8.1 / 9.1; B2 7.0 / 8.5 / 9.6 / 10.5.
+- vs B2 (its simple version) at h = 1: wins 18 of 20 (not Hasbro, P&G), median +1.3 points, up to +5.9 (cyclicals).
+- Placebo (base × average training growth, no features): LightGBM better for 20 of 20 (5.1 % vs 10.3 %).
+- Feature importance: h = 1 latest year-on-year growth 80 % of the gain; company type 3 % at h = 1 but 32 % at h = 4; target quarter ≈ 0.
+- By type, full year vs best rule: Seasonal 4/5, Growth 4/5, Cyclical 1/5, FMCG 2/5.
+- 2020 (h = 1): LightGBM better than ETS for cyclicals (14.1 vs 17.3 %) and FMCG (4.4 vs 4.9 %), worse for seasonal (16.9 vs 13.6 %).
+- My predictions: vs ETS "about 6 of 20, ETS better if anything" → 2 of 20, and significantly ✓ (direction right). Full year about 11/20 ✓ (exactly 11). vs B2 about 13/20 by 0.3–0.5 points → 18/20 by about 1.3 points (bigger than expected). Importance mostly latest growth ✓ at h = 1 (but type matters at h = 4). 2020 worse than ETS for cyclicals ✗ (better). Clear failures vs ETS Caterpillar, PACCAR, Cummins, Hasbro → the biggest were Clorox, Deere, Macy's, P&G.
+
 ## Session 4 results (evaluated 17 Nov 2026)
 
 - **Main test:** 13 of 20 match; random labellings average 8.4 (range 3–15); 1.8 % reach 13 or more → passes (p ≈ 0.02).
@@ -28,6 +45,7 @@ Main test (fixed): count the companies whose best simple rule matches their type
 
 | Session | Date | What was done | Lesson |
 |---|---|---|---|
+| 5 | 17 Nov 2026 | **LightGBM on all 20 companies.** Installed lightgbm 4.7.0 (+ libomp); native API, no scikit-learn. `src/features.py`: target = log growth vs the same quarter last year; features = last 4 year-on-year growths, last quarter-on-quarter growth, target fiscal quarter, type; each row dated by when its last piece became public. `src/lgbm.py`: one model per horizon, retrained at every company origin on all public rows; settings fixed in CLAUDE.md before running. `src/evaluate_lgbm.py`: two sign tests, per-company and per-type tables, vs B2, no-feature placebo, feature importance, 2020. `notebooks/05_lightgbm.ipynb`. | Pooling 20 companies and adding trees does not beat a simple model fitted to each company's own recent history. ML learned real patterns (beats B2 and a placebo), but starting from last year's quarter costs more than the extra data gains. |
 | 4 | 17 Nov 2026 | **Company types.** 17 companies added (`src/companies.py`, five per type, types from business descriptions only). `build_quarterly.py` now uses fiscal quarters from each company's own fiscal-year ends, 13/14-week quarters, full-year values only from annual reports, and drops mis-dated full-year tags; Best Buy from fiscal 2014 (fiscal-year change). Rolling origin after 5 years of each company's history; 65-day rule from each fiscal quarter end. `src/check_data.py`: data checks incl. non-seasonal jumps and tag conflicts. `src/evaluate_types.py`: forecasts for 20 companies, main test with a label-shuffling placebo, robustness, ETS vs best rule, 2020 by type. `notebooks/04_company_types.ipynb`. Sessions 0–3 data and results reproduce byte-identically. | Company type predicts the cyclical-vs-growth split (B0 vs B2), not seasonality: seasonal companies grow too. A hypothesis built from earlier results must be tested on new companies; there the evidence was only suggestive. |
 | 3 | 16 Nov 2026 | **ARIMA and a simple combination.** `src/arima.py`: AutoARIMA (season length 4) on log revenue, re-chosen by AICc at every origin, h = 1–4, 80 % intervals, order saved and flagged when it is a simple rule in disguise. `src/combine.py`: COMB = (ETS + best simple rule) / 2, no fitted weights. `src/evaluate_arima.py`: 12 main tests fixed in advance (h = 1 vs ETS, full year vs the best simple rule), Holm-corrected together; leak check; disguise check. `notebooks/03_arima_combination.ipynb`. | More flexible is not more reliable: ARIMA switched models 15–18 times and still landed within a few tenths of ETS. Averaging only helps when the two forecasts are about equally good. |
 | 2 | 16 Nov 2026 | **Exponential smoothing (AutoETS).** Installed statsforecast 2.1.1. `src/ets.py`: AutoETS (season length 4) re-chosen by AICc at every origin from the quarters known then, h = 1–4, 80 % intervals, chosen model saved. `src/evaluate_ets.py`: main tests fixed in advance (h = 1 and full year vs each company's bar), Diebold–Mariano with the Harvey correction, Holm correction for six tests, interval coverage, model choices, 2020, latest-revenue check, leak check, statsmodels cross-check. `notebooks/02_ets.ipynb`. Registered a project Jupyter kernel (a stale user-level `python3` kernel had been running the notebooks; reruns of 00 and 01 gave identical output). | A better next-quarter forecast is not a better full-year forecast: ETS cut the h = 1 miss by 16–40 % but tied or lost to the simple rules on the full year. With about 50 forecasts and six tests, even p ≈ 0.02 is not conclusive. |
@@ -100,4 +118,4 @@ MAPE, % (first-reported revenue, 2013–2026; Alphabet without the Motorola targ
 
 ## Next
 
-Session 5: to be decided. Now 20 companies. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.
+Session 6: to be decided. 20 companies. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.

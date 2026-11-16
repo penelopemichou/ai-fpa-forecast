@@ -48,6 +48,7 @@ You (Claude) write the code. I'm a beginner in Python: explain code simply, one 
 - **Horizons:** h = 1, 2, 3, 4 quarters ahead.
 - **Baselines** (`src/baselines.py`): B0 last quarter (sanity check only), B1 same quarter last year, B2 same quarter last year × (1 + growth of the last 4 known quarters vs the 4 before them). Every model must be compared with B1 and B2.
 - **Alphabet Motorola window:** targets 2012 Q2–2014 Q4 are affected by the Motorola restatements. Report Alphabet with and without them (Session 4 scores it without). Show 2020 separately (Session 4: targets ending in calendar 2020).
+- **LightGBM (Session 5), fixed on 17 Nov 2026 before any run, no tuning:** one model per horizon h = 1–4, retrained at every company origin on all rows (any of the 20 companies) whose `public_date` is on or before that origin's cutoff. Parameters: `objective="regression"`, `num_leaves=8`, `min_data_in_leaf=20`, `learning_rate=0.05`, 200 trees (`num_boost_round=200`), `seed=0`; everything else default (plus `deterministic=True`, `force_row_wise=True`, `verbose=-1`, which only make runs repeatable and quiet). Target: log growth vs the same quarter last year; features in `src/features.py`. Forecast = same quarter last year × exp(predicted growth). Uses LightGBM's own API (`lgb.train`), not the scikit-learn wrapper.
 - **Pre-registration:** write the hypothesis and main tests down (PROGRESS.md) before evaluating, and say when a hypothesis was shaped by earlier results on the same companies.
 
 ## Setup
