@@ -1,5 +1,33 @@
 # Progress
 
+## Session 7 hypothesis (fixed 17 Nov 2026 in Penelope's message, before any B4 forecast was computed)
+
+**Note on timing:** the hypothesis and predictions below were fixed in the chat before anything ran. My edit putting them into this file failed unnoticed, so this entry was written *after* the evaluation ran. The text is unchanged from what was fixed beforehand.
+
+**Rule (fixed, no variants):** B4 = latest known quarter × the geometric mean of the same step over the last 3 years, revenue[t+h−4k] / revenue[t−4k] for k = 1, 2, 3 (fewer if fewer are public). `src/smoothing.py`.
+
+**Hypothesis:** if smoothing explains ETS's lead, B4 ties ETS (about 10 of 20 companies) and beats B3 mostly for seasonal and cyclical companies.
+
+**Main tests (fixed):** (1) one quarter ahead, in how many of the 20 does B4 beat ETS? (2) full year, in how many of the 20 does B4 beat ETS? Two-sided sign tests; companies share shocks, so they aren't fully independent.
+
+**Penelope's predictions:** h = 1 about 8 of 20 (closer than B3's 4, not a tie: B4 smooths the step but still starts from one quarter, while ETS also smooths the level); full year about 7 of 20; B4 beats B3 for about 14 of 20 at h = 1 (mostly seasonal and FMCG), about 13 of 20 for the full year; B4 beats the old best rule for about 15 of 20 at h = 1, about 12 of 20 for the full year; growth tech about the same as B3; 2020 steps in the 3-year average make 2021–2023 forecasts worse by about 1–2 points for seasonal and cyclical companies, barely for growth and FMCG. Reading if B4 lands near 8 of 20: smoothing the step explains part of ETS's lead; the rest is smoothing the starting level.
+
+## Session 7 results: B4, smoothing the step (evaluated 17 Nov 2026)
+
+4,036 B4 forecasts (4,032 with 3 years of steps, 4 with 2), 0 leaks.
+
+| Main test (fixed) | B4 wins | Sign test p |
+|---|---|---|
+| h = 1: B4 beats ETS | 6 of 20 (Alphabet, Salesforce, Netflix, Adobe, Parker-Hannifin, P&G) | 0.12 |
+| Full year: B4 beats ETS | 7 of 20 | 0.26 |
+
+- Hypothesis (B4 ties ETS at about 10 of 20, beats B3 mostly for seasonal and cyclical): not confirmed. B4 is not reliably worse than ETS (unlike B3 and LightGBM), but 6 is short of a tie; it beats B3 for cyclicals 5/5 and FMCG 5/5 but seasonal only 2/5.
+- h = 1: B4 beats B3 16/20 (p = 0.01) and the old best rule 16/20 (p = 0.01). Full year: vs B3 14/20 (p = 0.12), vs the old best rule 10/20 (p = 1.00).
+- Mean MAPE h = 1–4: B4 4.8 / 6.8 / 8.4 / 9.9 (best simple rule at every horizon); ETS 4.4 / 6.3 / 7.7 / 8.9.
+- Growth tech: B4 beats ETS 4/5 at h = 1 (2.68 vs 2.88 %) and 5/5 for the full year (4.31 vs 5.43 %). Seasonal: no gain from smoothing (6.86 vs B3 6.80 %).
+- 2020 steps inside the 3-year average (h = 1, 2021–2023 forecasts): cost Seasonal 2.1, Cyclical 1.9, Growth 0.3, FMCG 0.1 points. Post-hoc (after seeing results, not a finding): without them B4 would average 4.51 % vs ETS 4.41 % and beat ETS for 10 of 20.
+- My predictions: h = 1 about 8 → 6; full year about 7 ✓ (exactly 7); vs B3 about 14 at h = 1 → 16 (cyclical and FMCG, not seasonal); full year about 13 → 14; vs old best rule about 15 → 16 ✓ and about 12 for the full year → 10; growth about the same as B3 (roughly ✓, B4 slightly better next quarter); 2020 cost 1–2 points for seasonal and cyclical, barely for growth and FMCG ✓ (2.1, 1.9, 0.3, 0.1).
+
 ## Session 4 hypothesis (fixed 17 Nov 2026, before any Session 4 forecast was evaluated)
 
 Which simple rule has the lowest one-quarter-ahead MAPE, by company type (types assigned from business descriptions only, approved 16 Nov 2026):
@@ -63,6 +91,7 @@ Settings fixed in CLAUDE.md before any run (num_leaves 8, min_data_in_leaf 20, l
 
 | Session | Date | What was done | Lesson |
 |---|---|---|---|
+| 7 | 17 Nov 2026 | **Smoothing: B4.** `src/smoothing.py`: B4 = latest quarter × geometric mean of the same step over 3 years (Excel version in the notebook). `src/evaluate_smoothing.py`: B4 on the full grid with a leak check, two sign tests vs ETS, vs B3 and the old best rule, by type, the cost of 2020 steps, and a clearly labelled post-hoc diagnostic. `notebooks/07_smoothing.ipynb`. The PROGRESS.md entry for the hypothesis was written after the run (a failed edit); the hypothesis itself was fixed in the chat beforehand. | Averaging three years of steps gives the best simple rule so far, but still not ETS. A tempting post-hoc fix (drop the 2020 steps) must wait for new data. |
 | 6 | 17 Nov 2026 | **Latest-start LightGBM.** `src/latest_start.py`: B3 (latest quarter × last year's same step) and the new target/feature. `src/lgbm_latest.py`: same LightGBM settings, starting from the latest known quarter, plus a shuffled-feature placebo at every origin. `src/evaluate_latest.py`: two sign tests, gap closed vs Session 5, vs B3, B3 vs the old simple rules, placebo, importance, 2020. `notebooks/06_latest_start.ipynb`. | Changing one thing isolates its effect: the starting point mattered for some types and hurt others, and wasn't why ETS won. The clearest gain came from the simple rule, not the model: B3 beats the old best simple rule for 15 of 20. |
 | 5 | 17 Nov 2026 | **LightGBM on all 20 companies.** Installed lightgbm 4.7.0 (+ libomp); native API, no scikit-learn. `src/features.py`: target = log growth vs the same quarter last year; features = last 4 year-on-year growths, last quarter-on-quarter growth, target fiscal quarter, type; each row dated by when its last piece became public. `src/lgbm.py`: one model per horizon, retrained at every company origin on all public rows; settings fixed in CLAUDE.md before running. `src/evaluate_lgbm.py`: two sign tests, per-company and per-type tables, vs B2, no-feature placebo, feature importance, 2020. `notebooks/05_lightgbm.ipynb`. | Pooling 20 companies and adding trees does not beat a simple model fitted to each company's own recent history. ML learned real patterns (beats B2 and a placebo), but starting from last year's quarter costs more than the extra data gains. |
 | 4 | 17 Nov 2026 | **Company types.** 17 companies added (`src/companies.py`, five per type, types from business descriptions only). `build_quarterly.py` now uses fiscal quarters from each company's own fiscal-year ends, 13/14-week quarters, full-year values only from annual reports, and drops mis-dated full-year tags; Best Buy from fiscal 2014 (fiscal-year change). Rolling origin after 5 years of each company's history; 65-day rule from each fiscal quarter end. `src/check_data.py`: data checks incl. non-seasonal jumps and tag conflicts. `src/evaluate_types.py`: forecasts for 20 companies, main test with a label-shuffling placebo, robustness, ETS vs best rule, 2020 by type. `notebooks/04_company_types.ipynb`. Sessions 0–3 data and results reproduce byte-identically. | Company type predicts the cyclical-vs-growth split (B0 vs B2), not seasonality: seasonal companies grow too. A hypothesis built from earlier results must be tested on new companies; there the evidence was only suggestive. |
@@ -137,4 +166,4 @@ MAPE, % (first-reported revenue, 2013–2026; Alphabet without the Motorola targ
 
 ## Next
 
-Session 7: to be decided. 20 companies; B3 is now a strong simple benchmark. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.
+Project wrap-up next (README "What I found"). B4 is the simple rule to beat. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.

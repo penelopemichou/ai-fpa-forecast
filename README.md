@@ -43,6 +43,8 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 **Session 6 done (17 Nov 2026): does the starting point explain why ETS beat LightGBM?** See `notebooks/06_latest_start.ipynb`.
 
+**Session 7 done (17 Nov 2026): is smoothing the reason ETS wins?** See `notebooks/07_smoothing.ipynb`.
+
 ## Session 1 result
 
 No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-reported revenue), the average miss (MAPE) of the best simple rule is:
@@ -119,6 +121,17 @@ Session 5's LightGBM started each forecast from the same quarter last year, whil
 
 But B3's gain is **one quarter ahead only**. For the full year (descriptive check), it beats the old best simple rule for 12 of 20 companies (p = 0.50, a coin flip; mean 7.2 % vs 6.7 %) and ETS for only 4 of 20 (p = 0.01). The exception is growth tech: B3 beats the old rule for 5 of 5 and ETS for 4 of 5, because carrying the latest quarter forward is right when growth persists. By type, B3 beats the old rule for the full year for Seasonal 4/5, Growth 5/5, Cyclical 1/5 and FMCG 2/5.
 
+## Session 7 result
+
+B4 = latest quarter × the **average** of the same step over the last three years (B3 used only last year's step). In Excel: `=B21*GEOMEAN(B18/B17;B14/B13;B10/B9)`. It was fixed in advance, with no variants.
+
+| Main test (fixed in advance) | B4 wins | Sign test p |
+|---|---|---|
+| One quarter ahead: B4 beats ETS | 6 of 20 | 0.12 |
+| Full year: B4 beats ETS | 7 of 20 | 0.26 |
+
+**Smoothing explains part of ETS's lead, not all of it.** B4 is the best simple rule in the project: one quarter ahead it beats B3 and each company's old best rule for 16 of 20 companies (p = 0.01), it's the best simple rule at every horizon, and unlike B3 and LightGBM it isn't reliably worse than ETS. For growth companies it beats ETS (4 of 5 next quarter, 5 of 5 for the full year). But it doesn't tie ETS overall, and seasonal companies gain nothing from it. The 2020 steps inside its 3-year average cost about 2 points on 2021–2023 forecasts for seasonal and cyclical companies. A post-hoc look suggests that leaving them out would roughly tie ETS, but that was found after seeing the results, so it's a hypothesis for new data, not a finding.
+
 ## Reproduce
 
 ```bash
@@ -138,4 +151,6 @@ cp .env.example .env              # then put your own email in .env (the SEC ask
 .venv/bin/python src/evaluate_lgbm.py
 .venv/bin/python src/lgbm_latest.py run      # Session 6: latest-start LightGBM + placebo (about 6 minutes)
 .venv/bin/python src/evaluate_latest.py
+.venv/bin/python src/evaluate_smoothing.py run        # Session 7: B4 forecasts
+.venv/bin/python src/evaluate_smoothing.py evaluate
 ```
