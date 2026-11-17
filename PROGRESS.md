@@ -13,6 +13,23 @@ Which simple rule has the lowest one-quarter-ahead MAPE, by company type (types 
 
 Main test (fixed): count the companies whose best simple rule matches their type's prediction, then compare with 1,000 random shufflings of the type labels.
 
+## Session 6 results: latest-start LightGBM (evaluated 17 Nov 2026)
+
+One change from Session 5: start from the latest known quarter (target = log change from it; new feature = last year's same step). Same LightGBM settings and seed. 4,036 forecasts, 943 training sets (each a real and a shuffled-placebo model), 0 leaks. Fixed during the run: an integer overflow in B3 for large companies (whole-number revenues multiplied before dividing).
+
+| Main test (fixed) | Wins | Sign test p |
+|---|---|---|
+| h = 1: latest-start LightGBM beats ETS | 4 of 20 (Salesforce, Netflix, Adobe, Church & Dwight) | 0.012 → still reliably worse |
+| Full year: beats the best simple rule | 11 of 20 | 0.82 |
+
+- vs Session 5 at h = 1: better for 14 of 20 (p = 0.12), but improvements (−3.6 points) and setbacks (+3.6) cancel; mean MAPE 5.04 % in both. Gap to ETS by type: Growth 0.08 → −0.06 (closed), FMCG 1.06 → 0.72, Seasonal 0.48 → 0.74, Cyclical 0.86 → 1.11 (Deere, PACCAR worse; Caterpillar 83 % closed).
+- vs B3 (its simple version): 11 of 20 (p = 0.82). The ML adds almost nothing on top of B3.
+- **B3 beats the old best simple rule for 15 of 20 (p = 0.04):** all growth, 4/5 seasonal (not Hasbro), 3/5 cyclical (not Cummins, PACCAR), 3/5 FMCG (not Colgate, Clorox). Mean h = 1 MAPE: B3 5.2 %, B2 7.0 %, ETS 4.4 %.
+- Placebo (shuffled features): worse for 19 of 20, median 2.3× (seasonal 4.6×). Exception PACCAR (8.6 vs 10.0 %): a shuffled model ≈ "latest × average change", close to PACCAR's best rule B0.
+- Feature importance: last year's same step 88 % (h = 1) and 79 % (h = 2); latest quarter-on-quarter change 74 % at h = 3; h = 4 is the Session 5 model.
+- 2020 (h = 1) vs Session 5: better for seasonal (16.0 vs 16.9 %) and growth (3.8 vs 4.3 %), worse for cyclical (16.4 vs 14.1 %) and FMCG (4.6 vs 4.4 %).
+- My predictions: vs ETS about 8 of 20, not significant → 4 of 20, significant (the gap didn't close as much as I thought). Full year about 11 ✓ (exactly 11). Gap half to most closed, most for cyclicals → on average none; closed for growth and FMCG, widened for cyclicals and seasonal. vs B3 about 15 of 20 → 11. Placebo 2–3× worse, worst for seasonal ✓ (2.3×, seasonal 4.6×). B3 beats the old best rule for about 5 → 15, including Hasbro and Clorox losing ✓. Last year's step dominates at h = 1 ✓ (88 %); qoq second only at h = 3. 2020 about the same as Session 5 overall ✓ (mixed by type).
+
 ## Session 5 results: LightGBM (evaluated 17 Nov 2026)
 
 Settings fixed in CLAUDE.md before any run (num_leaves 8, min_data_in_leaf 20, learning rate 0.05, 200 trees, seed 0; no tuning). 4,036 forecasts, 942 distinct models, 0 leaks.
@@ -45,6 +62,7 @@ Settings fixed in CLAUDE.md before any run (num_leaves 8, min_data_in_leaf 20, l
 
 | Session | Date | What was done | Lesson |
 |---|---|---|---|
+| 6 | 17 Nov 2026 | **Latest-start LightGBM.** `src/latest_start.py`: B3 (latest quarter × last year's same step) and the new target/feature. `src/lgbm_latest.py`: same LightGBM settings, starting from the latest known quarter, plus a shuffled-feature placebo at every origin. `src/evaluate_latest.py`: two sign tests, gap closed vs Session 5, vs B3, B3 vs the old simple rules, placebo, importance, 2020. `notebooks/06_latest_start.ipynb`. | Changing one thing isolates its effect: the starting point mattered for some types and hurt others, and wasn't why ETS won. The clearest gain came from the simple rule, not the model: B3 beats the old best simple rule for 15 of 20. |
 | 5 | 17 Nov 2026 | **LightGBM on all 20 companies.** Installed lightgbm 4.7.0 (+ libomp); native API, no scikit-learn. `src/features.py`: target = log growth vs the same quarter last year; features = last 4 year-on-year growths, last quarter-on-quarter growth, target fiscal quarter, type; each row dated by when its last piece became public. `src/lgbm.py`: one model per horizon, retrained at every company origin on all public rows; settings fixed in CLAUDE.md before running. `src/evaluate_lgbm.py`: two sign tests, per-company and per-type tables, vs B2, no-feature placebo, feature importance, 2020. `notebooks/05_lightgbm.ipynb`. | Pooling 20 companies and adding trees does not beat a simple model fitted to each company's own recent history. ML learned real patterns (beats B2 and a placebo), but starting from last year's quarter costs more than the extra data gains. |
 | 4 | 17 Nov 2026 | **Company types.** 17 companies added (`src/companies.py`, five per type, types from business descriptions only). `build_quarterly.py` now uses fiscal quarters from each company's own fiscal-year ends, 13/14-week quarters, full-year values only from annual reports, and drops mis-dated full-year tags; Best Buy from fiscal 2014 (fiscal-year change). Rolling origin after 5 years of each company's history; 65-day rule from each fiscal quarter end. `src/check_data.py`: data checks incl. non-seasonal jumps and tag conflicts. `src/evaluate_types.py`: forecasts for 20 companies, main test with a label-shuffling placebo, robustness, ETS vs best rule, 2020 by type. `notebooks/04_company_types.ipynb`. Sessions 0–3 data and results reproduce byte-identically. | Company type predicts the cyclical-vs-growth split (B0 vs B2), not seasonality: seasonal companies grow too. A hypothesis built from earlier results must be tested on new companies; there the evidence was only suggestive. |
 | 3 | 16 Nov 2026 | **ARIMA and a simple combination.** `src/arima.py`: AutoARIMA (season length 4) on log revenue, re-chosen by AICc at every origin, h = 1–4, 80 % intervals, order saved and flagged when it is a simple rule in disguise. `src/combine.py`: COMB = (ETS + best simple rule) / 2, no fitted weights. `src/evaluate_arima.py`: 12 main tests fixed in advance (h = 1 vs ETS, full year vs the best simple rule), Holm-corrected together; leak check; disguise check. `notebooks/03_arima_combination.ipynb`. | More flexible is not more reliable: ARIMA switched models 15–18 times and still landed within a few tenths of ETS. Averaging only helps when the two forecasts are about equally good. |
@@ -118,4 +136,4 @@ MAPE, % (first-reported revenue, 2013–2026; Alphabet without the Motorola targ
 
 ## Next
 
-Session 6: to be decided. 20 companies. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.
+Session 7: to be decided. 20 companies; B3 is now a strong simple benchmark. The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.

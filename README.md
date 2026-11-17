@@ -41,6 +41,8 @@ Quarterly revenue from the SEC EDGAR XBRL API (`data.sec.gov`, companyfacts). SE
 
 **Session 5 done (17 Nov 2026): machine learning (LightGBM) trained on all 20 companies.** See `notebooks/05_lightgbm.ipynb`.
 
+**Session 6 done (17 Nov 2026): does the starting point explain why ETS beat LightGBM?** See `notebooks/06_latest_start.ipynb`.
+
 ## Session 1 result
 
 No single FP&A rule wins everywhere. One quarter ahead (2013–2026, first-reported revenue), the average miss (MAPE) of the best simple rule is:
@@ -102,6 +104,19 @@ LightGBM (boosted decision trees) learned one pattern from all 20 companies toge
 
 **Machine learning did not beat exponential smoothing.** One quarter ahead it is reliably a little worse (mean MAPE 5.0 % vs 4.4 %), and for the full year it is a coin flip against the simple rules, just like ETS. It did learn real patterns: it beats its simple version B2 for 18 of 20 companies, by learning that only part of last year's growth carries over, and a no-feature placebo for all 20. It also held up better than ETS for cyclical and FMCG companies in 2020. One quarter ahead it leans almost entirely on the latest year-on-year growth; company type matters only further out.
 
+## Session 6 result
+
+Session 5's LightGBM started each forecast from the same quarter last year, while ETS starts from the latest quarter. Session 6 changed only that: LightGBM now predicts the change from the latest known quarter, with the same settings, features plus "last year's same step", and a shuffled-feature placebo.
+
+| Main test (fixed in advance) | Wins | Sign test p |
+|---|---|---|
+| One quarter ahead: latest-start LightGBM beats ETS | 4 of 20 | 0.012 (still worse) |
+| Full year: beats the company's best simple rule | 11 of 20 | 0.82 |
+
+**The starting point is not the whole story.** It closed the gap to ETS for growth companies (fully) and FMCG (about a third), but widened it for seasonal companies and cyclicals, so the average one-quarter-ahead error didn't move (5.04 % in both sessions). The placebo was worse for 19 of 20 companies, so the model does use its features, but it beats its own simple version B3 for only 11 of 20.
+
+**A useful by-product: B3**, "latest quarter × last year's same step", beats each company's old best simple rule (same quarter last year, with or without growth, or last quarter) for **15 of 20 companies** (p = 0.04). It's a better default simple rule for an FP&A team, though still behind ETS (5.2 % vs 4.4 % one quarter ahead).
+
 ## Reproduce
 
 ```bash
@@ -119,4 +134,6 @@ cp .env.example .env              # then put your own email in .env (the SEC ask
 .venv/bin/python src/evaluate_types.py evaluate
 .venv/bin/python src/lgbm.py run             # Session 5: LightGBM forecasts (about 4 minutes)
 .venv/bin/python src/evaluate_lgbm.py
+.venv/bin/python src/lgbm_latest.py run      # Session 6: latest-start LightGBM + placebo (about 6 minutes)
+.venv/bin/python src/evaluate_latest.py
 ```
