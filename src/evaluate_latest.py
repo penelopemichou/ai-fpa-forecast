@@ -103,6 +103,26 @@ def by_type(t):
     return out
 
 
+def b3_full_year(f, rules):
+    """Descriptive: full-year MAPE of B3 vs each company's old best simple rule
+    (chosen at h = 1 in Session 4) and vs ETS. Returns (per company, summary)."""
+    fy = full_year(f)
+    m = fy.pivot_table(index="company", columns="baseline", values="ape").reindex(ALL)
+    t = pd.DataFrame({"type": [company_type(c) for c in ALL], "best rule": rules["best"]}, index=ALL)
+    t["FY B3"] = m["B3"]
+    t["FY best rule"] = [m.loc[c, rules.loc[c, "best"]] for c in ALL]
+    t["FY ETS"] = m["ETS"]
+    t["B3 beats rule"] = t["FY B3"] < t["FY best rule"]
+    t["B3 beats ETS"] = t["FY B3"] < t["FY ETS"]
+    rows = []
+    for label, col in [("B3 beats the old best simple rule", "B3 beats rule"), ("B3 beats ETS", "B3 beats ETS")]:
+        w = int(t[col].sum())
+        row = {"full year": label, "wins": f"{w}/20", "sign test p (two-sided)": sign_test(w, 20)}
+        row.update({ty: f"{int(t[t['type'] == ty][col].sum())}/5" for ty in TYPES})
+        rows.append(row)
+    return t, pd.DataFrame(rows).set_index("full year")
+
+
 def all_horizons(f):
     m = f.pivot_table(index="h", columns="baseline", values="ape", aggfunc="mean")
     return m[["ETS", "LGBM", "LATEST", "B3", "B2", "PLACEBO"]]

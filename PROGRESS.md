@@ -25,6 +25,7 @@ One change from Session 5: start from the latest known quarter (target = log cha
 - vs Session 5 at h = 1: better for 14 of 20 (p = 0.12), but improvements (−3.6 points) and setbacks (+3.6) cancel; mean MAPE 5.04 % in both. Gap to ETS by type: Growth 0.08 → −0.06 (closed), FMCG 1.06 → 0.72, Seasonal 0.48 → 0.74, Cyclical 0.86 → 1.11 (Deere, PACCAR worse; Caterpillar 83 % closed).
 - vs B3 (its simple version): 11 of 20 (p = 0.82). The ML adds almost nothing on top of B3.
 - **B3 beats the old best simple rule for 15 of 20 (p = 0.04):** all growth, 4/5 seasonal (not Hasbro), 3/5 cyclical (not Cummins, PACCAR), 3/5 FMCG (not Colgate, Clorox). Mean h = 1 MAPE: B3 5.2 %, B2 7.0 %, ETS 4.4 %.
+- B3 full year (descriptive, added after the session): beats the old best simple rule for 12 of 20 (p = 0.50; mean 7.2 vs 6.7 %) and ETS for 4 of 20 (p = 0.01). By type vs the old rule: Seasonal 4/5, Growth 5/5, Cyclical 1/5, FMCG 2/5; vs ETS: Growth 4/5, others 0/5. B3's gain is one quarter ahead only, except for growth tech.
 - Placebo (shuffled features): worse for 19 of 20, median 2.3× (seasonal 4.6×). Exception PACCAR (8.6 vs 10.0 %): a shuffled model ≈ "latest × average change", close to PACCAR's best rule B0.
 - Feature importance: last year's same step 88 % (h = 1) and 79 % (h = 2); latest quarter-on-quarter change 74 % at h = 3; h = 4 is the Session 5 model.
 - 2020 (h = 1) vs Session 5: better for seasonal (16.0 vs 16.9 %) and growth (3.8 vs 4.3 %), worse for cyclical (16.4 vs 14.1 %) and FMCG (4.6 vs 4.4 %).

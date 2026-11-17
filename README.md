@@ -117,6 +117,8 @@ Session 5's LightGBM started each forecast from the same quarter last year, whil
 
 **A useful by-product: B3**, "latest quarter × last year's same step", beats each company's old best simple rule (same quarter last year, with or without growth, or last quarter) for **15 of 20 companies** (p = 0.04). It's a better default simple rule for an FP&A team, though still behind ETS (5.2 % vs 4.4 % one quarter ahead).
 
+But B3's gain is **one quarter ahead only**. For the full year (descriptive check), it beats the old best simple rule for 12 of 20 companies (p = 0.50, a coin flip; mean 7.2 % vs 6.7 %) and ETS for only 4 of 20 (p = 0.01). The exception is growth tech: B3 beats the old rule for 5 of 5 and ETS for 4 of 5, because carrying the latest quarter forward is right when growth persists. By type, B3 beats the old rule for the full year for Seasonal 4/5, Growth 5/5, Cyclical 1/5 and FMCG 2/5.
+
 ## Reproduce
 
 ```bash
