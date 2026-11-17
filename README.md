@@ -4,6 +4,46 @@
 
 FP&A (financial planning and analysis) teams forecast next quarter's revenue every quarter, often with simple rules such as "same quarter last year, plus last year's growth". This project asks whether statistical and machine-learning models do any better, when they are tested honestly: each forecast uses only the data that was public on the day it was made.
 
+## What I found
+
+Short answer: next quarter, a simple smoothing model (ETS) beats the usual FP&A rules and machine learning didn't beat it; for the full year, nothing reliably beats a good simple rule.
+
+20 large US companies, quarterly revenue, forecasts made every quarter from about 2013 to 2026 using only what was public at the time. MAPE is the average % miss, averaged over the 20 companies.
+
+| Method | MAPE next quarter | MAPE full year | Verdict |
+|---|---|---|---|
+| B0 Last quarter | 12.2 % | 11.3 % | Only useful for cyclical companies |
+| B1 Same quarter last year | 10.3 % | 9.4 % | The classic FP&A rule; rarely the best |
+| B2 Same quarter last year × growth | 6.9 % | 7.9 % | Fine for growth companies |
+| B3 Latest quarter × last year's step | 5.2 % | 7.2 % | Beats each company's old best rule next quarter for 15 of 20 |
+| **B4 Latest quarter × 3-year average step** | **4.8 %** | **6.7 %** | **Best simple rule**; not reliably worse than ETS (beats it for 6 of 20) |
+| **ETS** (exponential smoothing, per company) | **4.4 %** | **5.9 %** | **Best overall next quarter**; full year beats the best simple rule for only 11 of 20 |
+| ARIMA, and ETS + simple rule averaged | 3 companies only | | About as good as ETS / no better; 0 of 12 tests significant |
+| LightGBM, all 20 companies together | 5.1 % | 6.2 % [^lgbm] | Loses to ETS for 18 of 20 next quarter (p < 0.001) |
+| LightGBM, starting from the latest quarter | 5.1 % | 6.2 % [^lgbm] | Loses to ETS for 16 of 20 (p = 0.01) |
+
+[^lgbm]: The two LightGBM rows having the same averages is a checked coincidence, not a copy. Four quarters ahead the two models are identical by design (978 of 979 forecasts; the one exception fell back to B3 in Session 6). At one to three quarters ahead none of their 3,057 forecasts are the same, and their per-company gains and losses happen to cancel out (5.05 % vs 5.05 % next quarter; 6.22 % vs 6.16 % for the full year).
+
+**Rule of thumb for FP&A**
+- **Next quarter:** use exponential smoothing (AutoETS on the company's own history). In a spreadsheet, use B4: `=latest*GEOMEAN(three year-ago steps)`. For the 5 growth companies here, B4 was as good as ETS or better (descriptive, small sample).
+- **Full year:** nothing reliably beats a good simple rule for every company. On average, ETS misses least for seasonal, cyclical and consumer-staples companies, and the latest-quarter rules (B3/B4) for growth companies.
+- **Don't** default to "same quarter last year". Start from the latest quarter and smooth the seasonal step over a few years.
+- Machine learning pooled across 20 companies learned real patterns but didn't beat a simple per-company model with about 1,000 training rows.
+
+**Limitations**
+- "FP&A team" here means their simple rules of thumb. Real FP&A forecasts also use inside information (order books, pricing plans, management judgment), which this project doesn't have.
+- 20 large US companies that I chose, revenue only, quarterly, about 13 years including the 2020 shock.
+- Revenue was stitched together from SEC XBRL tags. Q4 is often derived, and a few restatements and fiscal-year changes needed handling (see `CLAUDE.md`).
+- Tests were fixed before each session, but I saw earlier sessions' results along the way: the Session 4 hypothesis came from Session 1's three companies. In Session 7 the hypothesis was fixed in chat before the run but written into PROGRESS.md only after it (a failed file edit); see PROGRESS.md.
+- Each company's "best simple rule" was picked with hindsight (from its own errors, in Session 4), which flatters the simple-rule bar.
+- Companies share shocks, so the sign tests are somewhat optimistic, and many comparisons were made across the sessions.
+- Only MAPE: no dollar-weighted or bias measures, and prediction intervals were only checked for ETS and ARIMA.
+
+**What I'd test next**
+- **Economic drivers for cyclical companies** (for example industrial production, purchasing-manager surveys, freight volumes), using only the data vintages known at each forecast date.
+- **A pretrained forecasting model** (a time-series foundation model), scored only on quarters after its training-data cutoff.
+- **B4 that skips known shock years** (a post-hoc idea from Session 7), tested on new data.
+
 ## Companies
 
 Sessions 0–3 used three companies: Mattel, Caterpillar and Alphabet. Session 4 added 17 more, five per type, with types assigned from business descriptions only, before any results:
