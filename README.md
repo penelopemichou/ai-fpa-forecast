@@ -44,6 +44,10 @@ Short answer: next quarter, a simple smoothing model (ETS) beats the usual FP&A 
 - **A pretrained forecasting model** (a time-series foundation model), scored only on quarters after its training-data cutoff.
 - **B4 that skips known shock years** (a post-hoc idea from Session 7), tested on new data.
 
+## Project 3 (in progress)
+
+Can a pretrained forecasting model (Chronos-Bolt) beat ETS and B4 on quarters published after its release? Session 1 (Mattel, 8 quarters): no real gap yet; all 20 companies next.
+
 ## Companies
 
 Sessions 0–3 used three companies: Mattel, Caterpillar and Alphabet. Session 4 added 17 more, five per type, with types assigned from business descriptions only, before any results:

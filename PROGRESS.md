@@ -1,5 +1,17 @@
 # Progress
 
+## Project 3 – Session 1 (Mattel)
+
+19 Nov 2026. A pretrained forecasting model, scored only where it cannot have seen the answer.
+
+- **Model:** `amazon/chronos-bolt-small` (48M parameters, revision `772f3d2`), zero-shot (not trained on Mattel), median forecast, CPU. `src/chronos_bolt.py`.
+- **Rule:** the model card states no release date; the Hugging Face repo was created on 25 Nov 2024 (first commit 13 Nov). Scored quarters: actual first published after 25 Nov 2024 → 8 quarters, 2024 Q4 to 2026 Q3, one quarter ahead. Same 65-day rule and same history as ETS (checked: identical quarters at every origin).
+- **MAPE on the same 8 quarters:** Chronos 5.15 %, ETS 6.16 %, B4 6.60 %. Chronos closer than ETS in 6 of 8 (sign test p = 0.29), than B4 in 5 of 8 (p = 0.73).
+- **2025 Q4 drives the lead:** ETS missed by 13.0 % and B4 by 17.0 %, Chronos by 6.2 %. Without that quarter: Chronos 5.01, B4 5.11, ETS 5.18 %.
+- **Range:** 8 of 8 actuals inside Chronos's 10–90 % range (about 6–7 expected), so the range is possibly too wide (8 of 8 inside happens ~17 % of the time by chance even with an honest range; check in Session 2). It is 15–20 % of the forecast for Q3–Q4 and 31–46 % for Q1–Q2.
+- **Claude's prediction** (`notes/predictions.md`): Chronos 8 %, ETS 7 %, B4 7.5 %; 3 and 4 wins of 8; 6 of 8 inside → Chronos did better than predicted, and the range was wider than predicted.
+- **Conclusion:** no real gap on 8 quarters; needs all 20 companies.
+
 ## Session 7 hypothesis (fixed 17 Nov 2026 in Penelope's message, before any B4 forecast was computed)
 
 **Note on timing:** the hypothesis and predictions below were fixed in the chat before anything ran. My edit putting them into this file failed unnoticed, so this entry was written *after* the evaluation ran. The text is unchanged from what was fixed beforehand.
