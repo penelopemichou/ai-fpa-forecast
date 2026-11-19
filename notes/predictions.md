@@ -40,3 +40,16 @@ Claude’s prediction (Session 3 – base model, all 20 companies)
 * About 85 % of actuals inside its 10–90 % range
 * No test survives Holm, either against ETS and B4 or against the small model
 * Why: a bigger model mostly learns the same habits better. The problem in Session 2 was how it handles seasonality, not its size.
+
+## Project 3 – Session 3 (full year)
+
+Saved 19 Nov 2026, before any full-year check was run.
+
+Claude’s prediction (Session 3 – full year)
+
+* Both Chronos sizes miss the full year by more than ETS and B4. The gap is bigger than one quarter ahead, because small errors add up over four quarters.
+* Chronos small beats ETS for 8 of 20 companies; base for 7 of 20
+* Base is worse than small on growth tech again, because it pushes growth too far over four quarters
+* Deere is the worst company again
+* No test survives Holm
+* Why: the full year is four quarter-forecasts added up. Chronos’s habits (leaning towards last quarter on seasonal companies, too much growth for base) build up instead of cancelling out.

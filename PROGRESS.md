@@ -1,5 +1,37 @@
 # Progress
 
+**Project 3 complete (19 Nov 2026).** Chronos-Bolt, used as it comes, gives a reasonable rough forecast but doesn't beat ETS; see README "Project 3: Can a free pretrained model beat ETS?".
+
+## Project 3 – Session 3 (full year)
+
+19 Nov 2026. Chronos-Bolt small and base vs ETS and B4 over the next four quarters. `src/chronos_fullyear.py`; tables `results/chronos_fullyear_*.csv`.
+
+- **Setup (as in Project 2):** "full year" = the sum of the next four quarters from each origin (h = 1–4, all forecast at that origin), % error on the sum. A window counts only if all four actuals were published after 25 Nov 2024 → **97 four-quarter windows** (5 per company; Williams-Sonoma 4; Clorox 3 because of its missing fiscal 2026 Q4). Chronos median with the same history as ETS; ETS and B4 are the saved Project 2 forecasts. Check: the new one-quarter-ahead Chronos forecasts match Sessions 2 and 3 (max difference 6 × 10⁻⁶ %).
+- **Full-year MAPE (average of the companies' MAPEs):** small 4.76 %, base 4.78 %, ETS 4.74 %, B4 5.34 %. Small beats ETS for 8 of 20 and B4 for 8; base beats ETS for 8 and B4 for 10; base beats small for 11.
+- **ETS's lead is only one quarter ahead** (MAPE per step, all 97 windows):
+
+  | Quarters ahead | Small | Base | ETS | B4 |
+  |---|---|---|---|---|
+  | 1 | 5.22 | 5.39 | 4.23 | 4.40 |
+  | 2 | 5.71 | 5.71 | 5.71 | 5.80 |
+  | 3 | 6.32 | 6.29 | 6.28 | 6.40 |
+  | 4 | 7.22 | 7.35 | 7.07 | 7.39 |
+
+- **All methods too low at 3–4 quarters ahead:** average error at h = 4 small −3.7 %, base −3.4 %, ETS −3.0 %, B4 −2.7 % (h = 3: −1.5 to −2.4 %). Revenue in 2025–26 grew faster than any method expected; a shared miss, not a Chronos habit. Over the full year Chronos is too low for 14 (small) and 13 (base) of 20 companies.
+- **Tests (Holm within each family):** 5 sign tests across companies, p = 0.50–1.00, none survives. 100 per-company Diebold–Mariano tests (lag 4; 90 testable, Williams-Sonoma and Clorox have too few windows), 5 with raw p < 0.05, 1 survives: Deere, base beats small (Holm p = 0.008). **This survivor is a small-sample artefact:** the 5 windows overlap by 3 quarters, and estimating 4 lags of correlation from 5 points shrank the variance to about 1 % of the plain estimate (statistic −16). With the plain variance it would be far from significant, and both sizes are much worse than ETS for Deere (13.6 / 11.6 vs 7.4 %).
+- **The windows overlap,** so the evidence is about two years of data per company, not five independent years.
+- **Fiscal-year windows only (descriptive):** 19 windows, one per company (not Clorox): small 3.47 %, base 3.72 %, ETS 5.16 %, B4 4.71 %. One year per company; not a finding.
+
+**Claude's prediction vs the results** (`notes/predictions.md`):
+
+| Prediction | Result | |
+|---|---|---|
+| Both sizes miss the full year by more than ETS and B4; the gap grows over four quarters | Tie with ETS (4.76 / 4.78 vs 4.74 %), both beat B4 (5.34 %); the gap shrinks after one quarter | ✗ |
+| Small beats ETS for 8 of 20, base for 7 of 20 | 8 and 8 of 20 | ✓ / ≈ |
+| Base worse than small on growth tech (pushes growth too far) | Base beats small for 4 of 5 growth tech companies (3.23 vs 3.50 %) | ✗ |
+| Deere the worst company again | Worst for both sizes (13.55 / 11.62 %) | ✓ |
+| No test survives Holm | One survives, but it is an artefact | ≈ |
+
 ## Project 3 – Session 3 (base model)
 
 19 Nov 2026. One change from Session 2: `amazon/chronos-bolt-base` (205M parameters, revision `5d9f166`; repo created 25 Nov 2024, the same day as small) instead of small (48M). Same 158 quarters, median, one quarter ahead, 65-day rule, same history as ETS. `src/chronos_base.py`; tables `results/chronos_base_*.csv`. Checks: same quarters as small, same history as ETS, identical on a rerun, small-model files untouched.
@@ -227,4 +259,4 @@ MAPE, % (first-reported revenue, 2013–2026; Alphabet without the Motorola targ
 
 ## Next
 
-Project wrapped up on 17 Nov 2026; see README "What I found". Ideas for later are listed there under "What I'd test next". The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.
+Project 3 (Chronos-Bolt) completed on 19 Nov 2026; see the Project 3 notes at the top and the README. The original project wrapped up on 17 Nov 2026; see README "What I found". Ideas for later are listed there under "What I'd test next". The bars per company: ETS at h = 1, and the company's best simple rule (`best_rules` in `src/evaluate_types.py`) for the full year, with the same rolling origin, 65-day rule and first-reported revenue.

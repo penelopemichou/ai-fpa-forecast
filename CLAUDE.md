@@ -51,6 +51,13 @@ You (Claude) write the code. I'm a beginner in Python: explain code simply, one 
 - **LightGBM (Session 5), fixed on 17 Nov 2026 before any run, no tuning:** one model per horizon h = 1–4, retrained at every company origin on all rows (any of the 20 companies) whose `public_date` is on or before that origin's cutoff. Parameters: `objective="regression"`, `num_leaves=8`, `min_data_in_leaf=20`, `learning_rate=0.05`, 200 trees (`num_boost_round=200`), `seed=0`; everything else default (plus `deterministic=True`, `force_row_wise=True`, `verbose=-1`, which only make runs repeatable and quiet). Target: log growth vs the same quarter last year; features in `src/features.py`. Forecast = same quarter last year × exp(predicted growth). Uses LightGBM's own API (`lgb.train`), not the scikit-learn wrapper.
 - **Pre-registration:** write the hypothesis and main tests down (PROGRESS.md) before evaluating, and say when a hypothesis was shaped by earlier results on the same companies.
 
+## Project 3: Chronos-Bolt (complete, 19 Nov 2026)
+
+- Pretrained model, used as it comes (no training on our data): `amazon/chronos-bolt-small` and `-base`, median forecast, CPU, revisions pinned in `src/chronos_bolt.py` and `src/chronos_base.py`. Installed with `chronos-forecasting` (versions in `requirements.txt`).
+- Scored only on quarters whose actual was first published after the release date, 25 Nov 2024 (the model card gives no date; both Hugging Face repos were created that day). Same 65-day rule and same history as ETS.
+- Scripts: `src/chronos_bolt.py` (Session 1, Mattel), `src/chronos_all.py` (Session 2, 20 companies), `src/chronos_base.py` (Session 3, base model), `src/chronos_fullyear.py` (Session 3, next four quarters). Predictions in `notes/predictions.md` (labelled "Claude's prediction").
+- Result: doesn't beat ETS or B4 one quarter ahead, ties ETS over the next four quarters, no reliable difference. Clorox's fiscal 2026 Q4 is missing (the SEC companyfacts file has no facts from its 7 Aug 2026 10-K); left as documented, no re-download.
+
 ## Setup
 
 - Python 3.12 (Homebrew, `/opt/homebrew/bin/python3.12`) venv in `.venv/`. Not the Mac's built-in Python 3.9, which no longer gets updates. Run things with `.venv/bin/python`, or activate first: `source .venv/bin/activate`.

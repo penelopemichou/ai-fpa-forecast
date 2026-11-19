@@ -44,9 +44,9 @@ Short answer: next quarter, a simple smoothing model (ETS) beats the usual FP&A 
 - **A pretrained forecasting model** (a time-series foundation model), scored only on quarters after its training-data cutoff.
 - **B4 that skips known shock years** (a post-hoc idea from Session 7), tested on new data.
 
-## Project 3 (in progress)
+## Project 3: Can a free pretrained model beat ETS?
 
-Can a pretrained forecasting model (Chronos-Bolt) beat ETS and B4 on quarters published after its release? Session 1 (Mattel, 8 quarters): no real gap yet; all 20 companies next. Session 2 (20 companies, 158 quarters): Chronos-Bolt doesn’t beat ETS or B4 one quarter ahead; no test survives Holm. Session 3: the bigger base model isn’t better.
+I tested Chronos-Bolt, a free forecasting model from Amazon, on the same 20 companies. I scored it only on quarters published after its release (25 Nov 2024), so it couldn’t have seen them before. Next quarter, it missed by about 1 point more than ETS and my Excel rule B4 (5.3 % vs 4.3 %), and the bigger version wasn’t better. Over the next four quarters, it tied ETS (4.8 % vs 4.7 %). None of the differences is statistically significant, and the test window is short (7–8 quarters per company). Its clearest weakness is the seasonal pattern: it leans towards last quarter instead of the same quarter last year. My takeaway: a free model used as it comes gives a reasonable rough forecast, but it doesn’t beat a well-set-up ETS. For next quarter, ETS or B4 is still the better choice.
 
 ## Companies
 
