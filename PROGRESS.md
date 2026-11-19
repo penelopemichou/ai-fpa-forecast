@@ -1,5 +1,28 @@
 # Progress
 
+## Project 3 – Session 3 (base model)
+
+19 Nov 2026. One change from Session 2: `amazon/chronos-bolt-base` (205M parameters, revision `5d9f166`; repo created 25 Nov 2024, the same day as small) instead of small (48M). Same 158 quarters, median, one quarter ahead, 65-day rule, same history as ETS. `src/chronos_base.py`; tables `results/chronos_base_*.csv`. Checks: same quarters as small, same history as ETS, identical on a rerun, small-model files untouched.
+
+- **MAPE (average of the companies' MAPEs):** base 5.36 % vs small 5.27 %, ETS 4.29 %, B4 4.23 %.
+- **Wins:** base beats small for 10 of 20 companies, ETS for 6 of 20, B4 for 7 of 20.
+- **By type:** base is better than small on seasonal (4 of 5; 6.11 vs 6.69 %) and FMCG (4 of 5; 4.36 vs 4.80 %), worse on all 5 growth tech (3.37 vs 2.23 %). It pushes growth further (lean 1.63 vs 1.41); Netflix was too high in all 8 quarters (+3.6 % on average; MAPE 3.56 vs small 1.04 %).
+- **Seasonal lean** (0 = same quarter last year, 1 = last quarter): base 0.13, small 0.23, ETS −0.06.
+- **Range:** 82 % of actuals inside base's 10–90 % range.
+- **Tests (Holm within each family):** sign tests vs ETS p = 0.12, vs B4 p = 0.26, vs small p = 1.00; 60 per-company Diebold–Mariano tests, 14 with raw p < 0.05, all against base; smallest Holm p = 0.20. **No test survives Holm.**
+- **Conclusion:** the bigger base model isn't better.
+
+**Claude's prediction vs the results** (`notes/predictions.md`):
+
+| Prediction | Result | |
+|---|---|---|
+| Base 5.0 %, a little better than small's 5.27 %, still behind ETS and B4 | 5.36 %: a little worse than small, behind ETS and B4 | ✗ (direction) |
+| Base beats ETS for 9 of 20, B4 for 9 of 20 | 6 and 7 of 20 | ✗ |
+| Deere still the worst company, about 15 % | Worst, 16.35 % | ✓ |
+| Seasonal lean still about 0.2 | 0.13 (down from small's 0.23) | ≈ |
+| About 85 % inside the 10–90 % range | 82 % | ✓ |
+| No test survives Holm (vs ETS, B4 and small) | None survives | ✓ |
+
 ## Project 3 – Session 2 (all 20 companies)
 
 19 Nov 2026. Same setup as Session 1 (chronos-bolt-small, median, CPU, one quarter ahead, 65-day rule, same history as ETS), on all 20 companies. `src/chronos_all.py`; tables `results/chronos_all_*.csv`.

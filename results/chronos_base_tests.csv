@@ -1,0 +1,64 @@
+family,test,company,n,base wins,stat,p,Holm p,survives Holm (5 %)
+1 across companies (sign test),base vs ets,all 20,20,6,,0.11531829833984375,0.34595489501953125,False
+1 across companies (sign test),base vs b4,all 20,20,7,,0.26317596435546875,0.5263519287109375,False
+1 across companies (sign test),base vs small,all 20,20,10,,1.0,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Mattel,8,1,-0.5227011235038798,0.617312814724334,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Hasbro,8,1,-1.9701095700465483,0.08947674572346032,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Williams-Sonoma,7,1,-0.7712490630520901,0.46983260119502185,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Best Buy,8,0,0.894726822679659,0.40065013078766193,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Macy's,8,0,2.1897296849111796,0.06470458844375675,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Alphabet,8,0,3.007493849530072,0.01973191296409187,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Microsoft,8,1,-2.9078399997194433,0.02273041396137752,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Salesforce,8,0,1.9551641174624204,0.0914690691081457,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Netflix,8,0,2.0047293609907464,0.08502419871691169,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Adobe,8,0,1.6731046605418174,0.1382231290662001,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Caterpillar,8,0,2.7456454482210586,0.028683572097678592,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Deere,8,0,3.354142116125837,0.012181524326074444,0.7065284109123178,False
+"2 per company (DM, Harvey)",base vs ets,Cummins,8,0,0.5164095694665813,0.6214767877385202,1.0,False
+"2 per company (DM, Harvey)",base vs ets,PACCAR,8,1,-2.1664919278409744,0.06696297798670316,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Parker-Hannifin,8,0,0.5856010113480413,0.5765277260048844,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Procter & Gamble,8,0,0.23868239755166498,0.818188834894087,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Colgate-Palmolive,8,1,-0.33015980900833525,0.7509402896259698,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Clorox,7,0,2.147959785193421,0.0753180945834293,1.0,False
+"2 per company (DM, Harvey)",base vs ets,Church & Dwight,8,0,1.0621429654459775,0.32343492075076136,1.0,False
+"2 per company (DM, Harvey)",base vs ets,General Mills,8,0,2.3069530634761346,0.05443058555617693,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Mattel,8,1,-0.539264798260441,0.6064225731107858,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Hasbro,8,1,-0.5303459879956484,0.6122734172769797,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Williams-Sonoma,7,1,-0.2375654314489898,0.8201224035117475,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Best Buy,8,0,1.402461504325767,0.2035360591080631,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Macy's,8,0,2.13151337014884,0.07051244582465112,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Alphabet,8,0,4.2800062594711745,0.0036553508837119425,0.2156657021390046,False
+"2 per company (DM, Harvey)",base vs b4,Microsoft,8,1,-0.42992454671262187,0.6801752770826359,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Salesforce,8,0,3.227189525903832,0.0145081213764567,0.8269629184580319,False
+"2 per company (DM, Harvey)",base vs b4,Netflix,8,0,1.8169021695656984,0.11207605338881303,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Adobe,8,0,2.7716392634557447,0.027628802063707426,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Caterpillar,8,0,2.5732592458626278,0.03683244121436796,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Deere,8,0,2.9507796002435027,0.021383179420250954,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Cummins,8,1,-0.6249152023999881,0.5518445583105026,1.0,False
+"2 per company (DM, Harvey)",base vs b4,PACCAR,8,1,-0.8665452331851429,0.4149036123136072,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Parker-Hannifin,8,0,0.5640845925599375,0.5903035323402754,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Procter & Gamble,8,0,0.8781129413497823,0.40900894668130977,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Colgate-Palmolive,8,0,0.069972272121878,0.9461727400051396,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Clorox,7,1,-0.7433290748861923,0.48535939401361217,1.0,False
+"2 per company (DM, Harvey)",base vs b4,Church & Dwight,8,0,0.31596223788537836,0.7612437211405673,1.0,False
+"2 per company (DM, Harvey)",base vs b4,General Mills,8,0,0.07486664946278784,0.9424154303512835,1.0,False
+"2 per company (DM, Harvey)",base vs small,Mattel,8,1,-0.18520445646351924,0.8583206346563818,1.0,False
+"2 per company (DM, Harvey)",base vs small,Hasbro,8,0,1.4989507066131746,0.17756364138794425,1.0,False
+"2 per company (DM, Harvey)",base vs small,Williams-Sonoma,7,1,-2.4066822598281084,0.052811950361255425,1.0,False
+"2 per company (DM, Harvey)",base vs small,Best Buy,8,1,-0.9165097579488385,0.38988223209066836,1.0,False
+"2 per company (DM, Harvey)",base vs small,Macy's,8,1,-1.3928402247101168,0.2063039596210918,1.0,False
+"2 per company (DM, Harvey)",base vs small,Alphabet,8,0,1.3137655523377625,0.23034187337067363,1.0,False
+"2 per company (DM, Harvey)",base vs small,Microsoft,8,0,0.07492545821089173,0.9423702934757228,1.0,False
+"2 per company (DM, Harvey)",base vs small,Salesforce,8,0,1.8258709491583183,0.11061279921995214,1.0,False
+"2 per company (DM, Harvey)",base vs small,Netflix,8,0,4.367281534970772,0.0032849142862994866,0.1970948571779692,False
+"2 per company (DM, Harvey)",base vs small,Adobe,8,0,3.0629221363795134,0.018248252524239873,1.0,False
+"2 per company (DM, Harvey)",base vs small,Caterpillar,8,0,1.317114850466148,0.22927602835183544,1.0,False
+"2 per company (DM, Harvey)",base vs small,Deere,8,1,-2.3746246039198278,0.04926999309402088,1.0,False
+"2 per company (DM, Harvey)",base vs small,Cummins,8,1,-0.45395036220701873,0.6636044116835502,1.0,False
+"2 per company (DM, Harvey)",base vs small,PACCAR,8,0,1.1791340187481532,0.2768647696625317,1.0,False
+"2 per company (DM, Harvey)",base vs small,Parker-Hannifin,8,0,2.938862456647765,0.02174840139110387,1.0,False
+"2 per company (DM, Harvey)",base vs small,Procter & Gamble,8,1,-1.0904145382052433,0.31163676006686775,1.0,False
+"2 per company (DM, Harvey)",base vs small,Colgate-Palmolive,8,0,0.913494485963315,0.3913598073960275,1.0,False
+"2 per company (DM, Harvey)",base vs small,Clorox,7,1,-1.3228798595425155,0.2340561240106908,1.0,False
+"2 per company (DM, Harvey)",base vs small,Church & Dwight,8,1,-1.183414818295148,0.2752717143463228,1.0,False
+"2 per company (DM, Harvey)",base vs small,General Mills,8,1,-2.6462477405712344,0.033121619087174925,1.0,False
