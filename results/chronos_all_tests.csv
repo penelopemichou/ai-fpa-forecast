@@ -1,0 +1,43 @@
+family,test,company,n,chronos wins,stat,p,Holm p,survives Holm (5 %)
+1 across companies (sign test),chronos vs ets,all 20,20,8,,0.5034446716308594,1.0,False
+1 across companies (sign test),chronos vs b4,all 20,20,9,,0.8238029479980469,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Mattel,8,1,-0.500689788185163,0.6319456541916382,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Hasbro,8,1,-2.1178754971886415,0.07194685336799464,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Williams-Sonoma,7,0,0.589610214170443,0.5769642297716872,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Best Buy,8,0,1.2744357069065895,0.2431829771038361,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Macy's,8,0,2.6860990795258712,0.031261841639045544,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Alphabet,8,0,1.589137750383386,0.15605340619535996,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Microsoft,8,1,-1.3896874799559165,0.20721820847827466,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Salesforce,8,0,1.5194115701383704,0.17245789852088209,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Netflix,8,1,-0.6444116774749175,0.539842867609644,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Adobe,8,1,-0.3826404129594962,0.7133397626820428,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Caterpillar,8,0,0.9538414599271965,0.37193282408342476,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Deere,8,0,3.3726359361371636,0.011877481924193833,0.4632217950435595,False
+"2 per company (DM, Harvey)",chronos vs ets,Cummins,8,0,0.7776432525262679,0.46224744440874166,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,PACCAR,8,1,-2.1938072089466827,0.06431628090040187,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Parker-Hannifin,8,1,-0.5288948552961489,0.6132282692423997,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Procter & Gamble,8,0,0.45554150393661297,0.6625139418132606,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Colgate-Palmolive,8,1,-1.58613904073161,0.15672816940779666,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Clorox,7,0,1.9275051684045255,0.10219710627834294,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,Church & Dwight,8,0,2.0827999621199624,0.07577125705416696,1.0,False
+"2 per company (DM, Harvey)",chronos vs ets,General Mills,8,0,3.895389513279588,0.005934021809038985,0.23736087236155942,False
+"2 per company (DM, Harvey)",chronos vs b4,Mattel,8,1,-0.528916638530467,0.6132139298145616,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Hasbro,8,1,-1.1466252670460422,0.2892146516418269,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Williams-Sonoma,7,0,1.8038606271988726,0.12130211490870427,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Best Buy,8,0,1.8613247229456522,0.1050070501865449,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Macy's,8,0,2.5853896521294177,0.036187005290550384,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Alphabet,8,0,2.5034567087351967,0.04078542361370121,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Microsoft,8,1,-0.35872430775898395,0.7303767525574867,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Salesforce,8,0,2.3609906727582985,0.05026797298629585,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Netflix,8,1,-1.6951319611401943,0.13387273153420307,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Adobe,8,0,0.2748003043662112,0.7914034635616951,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Caterpillar,8,0,1.376377546142074,0.21111762741483697,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Deere,8,0,3.0510220762140667,0.018556486335789605,0.705146480760005,False
+"2 per company (DM, Harvey)",chronos vs b4,Cummins,8,1,-0.4837668104755488,0.6433178121159927,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,PACCAR,8,1,-1.1520486983295253,0.28712318611418597,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Parker-Hannifin,8,1,-0.04077742233390658,0.9686120229440518,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Procter & Gamble,8,0,1.0221445342676752,0.34073218475015477,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Colgate-Palmolive,8,1,-0.5549191735991909,0.5962277670536621,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Clorox,7,1,-0.3396969736713726,0.7456603134451225,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,Church & Dwight,8,0,0.8920421075822682,0.40199230309330786,1.0,False
+"2 per company (DM, Harvey)",chronos vs b4,General Mills,8,0,0.7901272070325637,0.4553820617939874,1.0,False

@@ -1,5 +1,30 @@
 # Progress
 
+## Project 3 – Session 2 (all 20 companies)
+
+19 Nov 2026. Same setup as Session 1 (chronos-bolt-small, median, CPU, one quarter ahead, 65-day rule, same history as ETS), on all 20 companies. `src/chronos_all.py`; tables `results/chronos_all_*.csv`.
+
+- **Quarters:** actual first published after 25 Nov 2024, checked per company with its own filing dates → 158 quarters (7–8 per company). Checks: Chronos saw exactly ETS's quarters at every origin; the ETS refit equals the Project 2 ETS forecasts; Session 1's Mattel file reproduces byte-identically.
+- **MAPE (average of the companies' MAPEs):** Chronos 5.27 %, ETS 4.29 %, B4 4.23 %. Chronos beats ETS for 8 of 20 companies and B4 for 9 of 20.
+- **Still last without Deere** (Chronos 17.8 % vs ETS 5.5 %, 0 of 8 quarters won): Chronos 4.61 %, ETS 4.22 %, B4 4.11 % for the other 19.
+- **Seasonal companies:** Chronos leans towards "last quarter". On a scale from 0 (same quarter last year) to 1 (last quarter), its median is 0.23 vs ETS −0.06, so it misses seasonal dips (Macy's after the holiday quarter).
+- **Range:** 85 % of actuals inside Chronos's 10–90 % range (135 of 158; vs 80 %, p ≈ 0.09), at most slightly too wide. ETS's 80 % range: 79 %.
+- **Tests (Holm within each family):** sign tests across companies, vs ETS p = 0.50 and vs B4 p = 0.82; 40 per-company Diebold–Mariano tests, 6 with raw p < 0.05 (all in favour of ETS or B4), smallest Holm p = 0.24. **No test survives Holm.**
+- **Clorox gap:** fiscal 2026 Q4 (Apr–Jun 2026) is missing from `revenue_quarterly.csv`, so Clorox has 7 quarters and its fiscal 2027 Q1 was forecast two steps ahead (by Chronos and ETS alike). Cause: Clorox filed its fiscal 2026 10-K on 7 Aug 2026 (accession 0000021076-26-000034, with XBRL), but the SEC companyfacts file downloaded on 16 Nov 2026 contains no facts from that filing. Clorox reports no separate Q4 figure, so Q4 = full year − Q1–Q3 cannot be built without the full-year number. Data and results left unchanged; a fresh download may fix it.
+- **Conclusion:** Chronos-Bolt doesn't beat ETS or B4 one quarter ahead; no test survives Holm.
+
+**Claude's prediction vs the results** (`notes/predictions.md`):
+
+| Prediction | Result | |
+|---|---|---|
+| MAPE Chronos 5.8, ETS 5.6, B4 6.2 % (roughly tied) | 5.27 / 4.29 / 4.23 %: Chronos last | ✗ |
+| Chronos beats ETS 9 of 20, B4 11 of 20 | 8 and 9 of 20 | ≈ |
+| ~90 % inside the 80 % range (too wide) | 85 % (p ≈ 0.09), at most slightly wide | ≈ |
+| Chronos too low in 13 of 20 | 9 of 20; average error +0.08 % | ✗ |
+| Best on seasonal and FMCG, worst on growth tech (too low) | Closest to ETS on growth tech (2.23 vs 2.03 %, average error −0.12 %); weakest on cyclicals (Deere) and FMCG (1 of 5 wins) | ✗ |
+| No test survives Holm | None survives | ✓ |
+| Mattel's win was one lucky quarter | Mattel still a win, but it doesn't carry over to the other companies | ✓ |
+
 ## Project 3 – Session 1 (Mattel)
 
 19 Nov 2026. A pretrained forecasting model, scored only where it cannot have seen the answer.

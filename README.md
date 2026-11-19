@@ -46,7 +46,7 @@ Short answer: next quarter, a simple smoothing model (ETS) beats the usual FP&A 
 
 ## Project 3 (in progress)
 
-Can a pretrained forecasting model (Chronos-Bolt) beat ETS and B4 on quarters published after its release? Session 1 (Mattel, 8 quarters): no real gap yet; all 20 companies next.
+Can a pretrained forecasting model (Chronos-Bolt) beat ETS and B4 on quarters published after its release? Session 1 (Mattel, 8 quarters): no real gap yet; all 20 companies next. Session 2 (20 companies, 158 quarters): Chronos-Bolt doesn’t beat ETS or B4 one quarter ahead; no test survives Holm.
 
 ## Companies
 

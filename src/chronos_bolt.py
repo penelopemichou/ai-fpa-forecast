@@ -52,20 +52,25 @@ def scored_targets(cdf):
     return [q for q, d in filed.items() if d > RELEASE_DATE]
 
 
-def chronos_forecasts(pipeline, cdf):
+def chronos_forecasts(pipeline, cdf, company=COMPANY):
+    """One row per scored target quarter of one company.
+
+    If the origin quarter itself was not public by the cutoff (rare), the
+    context ends one quarter earlier and Chronos forecasts one step further,
+    exactly as ETS does (`steps` in src/ets.py)."""
     rows = []
     for target in scored_targets(cdf):
         origin = target - H
         known = known_at(cdf, origin)
         context = training_series(known)               # same quarters ETS used
-        assert context.index[-1] == origin, "latest quarter not known at origin"
+        steps = (target - context.index[-1]).n
         assert (cdf.set_index("quarter").loc[context.index, "first_filed_date"]
                 <= cutoff_date(origin, cdf)).all(), "leak: a context quarter was not public yet"
         quantiles, _ = pipeline.predict_quantiles(
             torch.tensor(context.to_numpy() / 1e9, dtype=torch.float32),
-            prediction_length=H, quantile_levels=[0.1, 0.5, 0.9])
-        q = quantiles[0, H - 1].numpy() * 1e9
-        rows.append({"company": COMPANY, "origin": str(origin), "h": H, "target": str(target),
+            prediction_length=steps, quantile_levels=[0.1, 0.5, 0.9])
+        q = quantiles[0, steps - 1].numpy() * 1e9
+        rows.append({"company": company, "origin": str(origin), "h": H, "target": str(target),
                      "actual": cdf.set_index("quarter").loc[target, "value"],
                      "actual_filed": cdf.set_index("quarter").loc[target, "first_filed_date"].date(),
                      "chronos": q[1], "chronos_q10": q[0], "chronos_q90": q[2],
